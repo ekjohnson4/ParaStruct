@@ -1,24 +1,4 @@
-# my_app
+# ParaBuild
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+Early prototype of interactive vue3/three.js app used to estimate cost of foundation construction.
+![ParaBuild Logo](/src/assets/ParaBuild.PNG)
