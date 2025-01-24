@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, defineProps, defineEmits } from 'vue'
+import { onMounted, ref, defineProps, defineEmits, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import concreteTexture from '@/assets/textures/square-outline-textured.png'
@@ -23,10 +23,9 @@ const objects = []
 let isMouseDown = false
 let lastPlacedPosition = new THREE.Vector3()
 
-defineProps({
-  msg: String,
+const props = defineProps({
   isOpen: Boolean,
-    blockSqFt: {
+  blockSqFt: {
     type: Number,
     default: 1
   },
@@ -41,6 +40,35 @@ const emit = defineEmits(['block-added', 'block-removed'])
 onMounted(() => {
   init()
   render()
+})
+
+watch(() => props.foundationThickness, (newThickness) => {
+  const textureLoader = new THREE.TextureLoader()
+  const texture = textureLoader.load(concreteTexture)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.wrapS = THREE.RepeatWrapping
+  texture.wrapT = THREE.RepeatWrapping
+
+  // Recreate cube geometry with new thickness
+  cubeGeo = new THREE.BoxGeometry(50, newThickness, 50)
+
+  // Update existing cubes' geometry
+  objects.forEach(obj => {
+    if (obj !== plane) {
+      obj.geometry.dispose() // Important: free up memory
+      obj.geometry = cubeGeo
+
+      // Reposition to keep on ground
+      obj.position.y = newThickness / 2
+    }
+  })
+
+  // Recreate material to ensure consistency
+  cubeMaterial = new THREE.MeshStandardMaterial({
+    map: texture,
+    roughness: 0.7,
+    metalness: 0.1
+  })
 })
 
 function init() {
@@ -62,7 +90,7 @@ function init() {
   controls.maxPolarAngle = Math.PI / 2 // Prevent camera from going below the ground plane
 
   // Roll-over helpers
-  const rollOverGeo = new THREE.BoxGeometry(50, 50, 50)
+  const rollOverGeo = new THREE.BoxGeometry(50, props.foundationThickness, 50)
   rollOverMaterial = new THREE.MeshBasicMaterial({
     color: 0xff0000,
     opacity: 0.5,
@@ -80,7 +108,7 @@ function init() {
   texture.wrapT = THREE.RepeatWrapping
 
   // Create cube material with texture
-  cubeGeo = new THREE.BoxGeometry(50, 50, 50)
+  cubeGeo = new THREE.BoxGeometry(50, props.foundationThickness, 50)
   cubeMaterial = new THREE.MeshStandardMaterial({
     map: texture,
     roughness: 0.7,
@@ -153,6 +181,8 @@ function onPointerMove(event) {
       .floor()
       .multiplyScalar(50)
       .addScalar(25)
+
+    position.y = props.foundationThickness / 2
 
     // Only show rollover mesh if position is valid
     if (isValidPlacement(position)) {
@@ -229,7 +259,12 @@ function isValidPlacement(position) {
 function placeBlock(position) {
   if (isValidPlacement(position)) {
     const voxel = new THREE.Mesh(cubeGeo, cubeMaterial)
-    voxel.position.copy(position)
+    // Adjust y position to align with ground
+    voxel.position.set(
+      position.x,
+      props.foundationThickness / 2, // Center block on ground
+      position.z
+    )
     scene.add(voxel)
     objects.push(voxel)
     emit('block-added')

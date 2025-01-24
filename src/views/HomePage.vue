@@ -51,8 +51,9 @@
 
   <div id="main" :style="{ marginLeft: mainMargin }">
     <HomePageMain
-      msg="Ethan Time"
       :isOpen="isOpen"
+      :blockSqFt="blockSqFt"
+      :foundationThickness="foundationThickness"
       @block-added="incrementBlocks"
       @block-removed="decrementBlocks"
     />
