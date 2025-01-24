@@ -1,0 +1,114 @@
+ /* The sidebar menu */
+.sidebar {
+  z-index: 1000;
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  padding-top: 60px;
+  transition: 0.5s;
+}
+
+.sidebar-content {
+  padding: 20px;
+  color: white;
+}
+
+.sidebar-content h2 {
+  margin-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.stat-item {
+  margin: 10px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  font-weight: normal;
+}
+
+.stat-value {
+  font-weight: bold;
+}
+
+/* The button used to open the sidebar */
+.openbtn {
+  z-index: 1000;
+  font-size: 24px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  transition: left 0.5s;
+  z-index: 2;
+  width: 34px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-right-radius: 2.5px;
+  border-bottom-right-radius: 2.5px;
+}
+
+#main {
+  transition: margin-left .5s;
+}
+
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+
+#three-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+#three-container:active {
+  cursor: move;
+}
+
+#three-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+#info {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  color: #444;
+  user-select: none;
+  pointer-events: none;
+  width: auto;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+strong {
+  color: #111;
+}
+
+.input-field {
+  width: 30%;
+  border: 1px solid #ccc;
+}
