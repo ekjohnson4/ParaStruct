@@ -1,4 +1,28 @@
- /* The sidebar menu */
+/* The navbar menu */
+.navbar {
+  z-index: 1001;
+  background-color: #111;
+}
+
+.navbar-header {
+  display: flex;
+}
+
+.navbar-brand {
+  color: white !important;
+  padding-left: 10px;
+}
+
+.openbtn {
+  font-size: 24px;
+  background-color: #111;
+  color: white;
+  border: none;
+  width: 34px;
+  height: 40px;
+}
+
+/* The sidebar menu */
 .sidebar {
   z-index: 1000;
   height: 100%;
@@ -9,19 +33,31 @@
   left: 0;
   background-color: #111;
   overflow-x: hidden;
-  padding-top: 60px;
+  padding-top: 20px;
   transition: 0.5s;
 }
 
 .sidebar-content {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0px 20px 20px 20px;
   color: white;
 }
 
-.sidebar-content h2 {
-  margin-bottom: 15px;
+.config-content {
+  flex-grow: 1;
+}
+
+.stats-container {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #333;
+}
+
+.sidebar-content h4 {
+  margin: 10px 0;
   display: flex;
-  justify-content: space-between;
 }
 
 .stat-item {
@@ -37,29 +73,6 @@
 
 .stat-value {
   font-weight: bold;
-}
-
-/* The button used to open the sidebar */
-.openbtn {
-  z-index: 1000;
-  font-size: 24px;
-  cursor: pointer;
-  background-color: #111;
-  color: white;
-  padding: 10px 15px;
-  border: none;
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  transition: left 0.5s;
-  z-index: 2;
-  width: 34px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-top-right-radius: 2.5px;
-  border-bottom-right-radius: 2.5px;
 }
 
 #main {
@@ -92,7 +105,7 @@
 
 #info {
   position: fixed;
-  top: 10px;
+  top: 75px;
   left: 50%;
   transform: translateX(-50%);
   text-align: center;

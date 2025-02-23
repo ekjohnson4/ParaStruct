@@ -1,4 +1,19 @@
 <template>
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button
+        class="openbtn"
+        :style="{ left: openBtnPosition }"
+        @click.stop="toggleNav"
+        @pointerdown.stop
+      >
+        {{ isOpen ? 'X' : '☰' }}
+      </button>
+      <div class="navbar-brand">ParaStruct</div>
+    </div>
+  </div>
+</nav>
   <div
     id="mySidebar"
     class="sidebar"
@@ -7,47 +22,43 @@
     @click.stop
   >
     <div class="sidebar-content">
-      <h2>Stats</h2>
-      <div class="stat-item">
-        <span class="stat-label">SqFt per Block:</span>
-        <input
-          v-model.number="blockSqFt"
-          type="number"
-          min="1"
-          placeholder="Enter sq ft per block"
-          class="input-field"
-        >
+      <div class="config-content">
+        <h4>Config</h4>
+        <div class="stat-item">
+          <span class="stat-label">SqFt per Block:</span>
+          <input
+            v-model.number="blockSqFt"
+            type="number"
+            min="1"
+            placeholder="Enter sq ft per block"
+            class="input-field"
+          >
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Thickness (inches):</span>
+          <input
+            v-model.number="foundationThickness"
+            type="number"
+            min="6"
+            max="12"
+            placeholder="Thickness (6-12 inches)"
+            class="input-field"
+          >
+        </div>
       </div>
-      <div class="stat-item">
-        <span class="stat-label">Thickness (inches):</span>
-        <input
-          v-model.number="foundationThickness"
-          type="number"
-          min="6"
-          max="12"
-          placeholder="Thickness (6-12 inches)"
-          class="input-field"
-        >
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Area:</span>
-        <span class="stat-value">{{ foundationArea }} sq ft</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-label">Estimated cost:</span>
-        <span class="stat-value">${{ estimatedCost }}</span>
+
+      <div class="stats-container">
+        <div class="stat-item">
+          <span class="stat-label">Area:</span>
+          <span class="stat-value">{{ foundationArea }} sq ft</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Estimated cost:</span>
+          <span class="stat-value">${{ estimatedCost }}</span>
+        </div>
       </div>
     </div>
   </div>
-
-  <button
-    class="openbtn"
-    :style="{ left: openBtnPosition }"
-    @click.stop="toggleNav"
-    @pointerdown.stop
-  >
-    {{ isOpen ? 'x' : '☰' }}
-  </button>
 
   <div id="main" :style="{ marginLeft: mainMargin }">
     <HomePageMain
