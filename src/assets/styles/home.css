@@ -71,7 +71,41 @@
 .item {
   border: 1px solid #ddd;
   padding: 8px;
-  text-align: center;
+  display: grid;
+  grid-template-columns: 50px 1fr auto;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+}
+
+.item-img {
+  grid-row: 1 / span 2;
+  grid-column: 1;
+  width: 50px;
+  height: auto;
+}
+
+.item-title {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 12px;
+  text-align: left;
+}
+
+.item-qty {
+  grid-column: 2;
+  grid-row: 2;
+  text-align: left;
+  font-size: 11px;
+}
+
+.item-price {
+  grid-column: 3;
+  grid-row: 1 / span 2;
+  font-weight: bold;
+  font-size: 14px;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .stats-container {
@@ -94,6 +128,7 @@
 
 .stat-label {
   font-weight: normal;
+  text-align: left;
 }
 
 .stat-value {

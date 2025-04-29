@@ -45,22 +45,62 @@
             class="input-field"
           >
         </div>
+        <div class="stat-item">
+          <span class="stat-label">Rebar Spacing (inches):</span>
+          <input
+            v-model.number="rebarSpacing"
+            type="number"
+            min="6"
+            max="24"
+            step="1"
+            placeholder="Spacing (e.g., 12)"
+            class="input-field"
+          >
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Rebar Length (feet):</span>
+          <input
+            v-model.number="poleLength"
+            type="number"
+            min="5"
+            max="40"
+            step="1"
+            placeholder="e.g., 10"
+            class="input-field"
+          >
+        </div>
+
+        <div class="stat-item">
+          <span class="stat-label">Rebar Size:</span>
+          <select v-model="rebarSize" class="input-field">
+            <option value="#3">#3 (3/8")</option>
+            <option value="#4">#4 (1/2")</option>
+            <option value="#5">#5 (5/8")</option>
+            <option value="#6">#6 (3/4")</option>
+          </select>
+        </div>
       </div>
 
       <div class="materials-container">
         <div class="materials-wrapper">
           <div
             class="item"
-            v-for="(material, index) in materials"
+            v-for="(material, index) in filteredMaterials"
             :key="index"
           >
-            <img src="material.imageUrl" alt="Product Image" style="width: 100px; height: auto;">
-            <div><strong>{{ material.title }}</strong></div>
-            <div>Price: {{ material.price }}</div>
-            <div v-if="material.bulkPricing">
-              Bulk ({{ material.bulkPricing.quantity }}+): {{ material.bulkPricing.price }}
+            <img
+              class="item-img"
+              src="../assets/rebar.webp"
+              alt="Product Image"
+            />
+            <a class="item-title" :href="material.link"><strong>{{ material.title }}</strong></a>
+            <div class="item-price">
+              {{ material.usesBulk ? material.bulkPricing.price : material.price }}
+              <span v-if="material.usesBulk" style="color: green; font-size: 11px;">bulk</span>
             </div>
-            <a :href="material.link" target="_blank">View Product</a>
+            <div class="item-qty">
+              x{{ rebarCalculation.poles }}<br />
+            </div>
           </div>
         </div>
       </div>
@@ -99,6 +139,15 @@ const isOpen = ref(true)
 const blockCount = ref(0)
 const blockSqFt = ref(4)
 const foundationThickness = ref(8) // default 8 inches
+const rebarSpacing = ref(12);
+const poleLength = ref(10);
+const rebarSize = ref('#4');
+const sizeMap = {
+  '#3': ['3/8', '0.375'],
+  '#4': ['1/2', '0.5'],
+  '#5': ['5/8', '0.625'],
+  '#6': ['3/4', '0.75']
+};
 
 const sidebarWidth = computed(() => isOpen.value ? '250px' : '0px')
 const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
@@ -130,4 +179,77 @@ const incrementBlocks = () => {
 const decrementBlocks = () => {
   blockCount.value--
 }
+
+const filteredMaterials = computed(() => {
+  const selectedSize = rebarSize.value;
+  const sizeAliases = sizeMap[selectedSize] || [];
+  const polesNeeded = rebarCalculation.value.poles;
+
+  const matches = materials.value
+    .filter((material) => {
+      const lengthMatch = material.title.match(/(\d+)\s*ft/);
+      if (!lengthMatch) return false;
+      const materialLength = parseInt(lengthMatch[1]);
+      if (materialLength !== poleLength.value) return false;
+
+      const titleLower = material.title.toLowerCase();
+      const matchesSize =
+        titleLower.includes(selectedSize.toLowerCase()) ||
+        sizeAliases.some(alias => titleLower.includes(alias));
+
+      return matchesSize;
+    })
+    .map((material) => {
+      const regularPrice = parseFloat(
+        material.price?.replace(/[^0-9.]/g, '') || 'Infinity'
+      );
+
+      const hasBulk = material.bulkPricing && material.bulkPricing.quantity && material.bulkPricing.price;
+      const bulkQty = hasBulk ? parseInt(material.bulkPricing.quantity) : Infinity;
+      const bulkPrice = hasBulk ? parseFloat(material.bulkPricing.price.replace(/[^0-9.]/g, '')) : Infinity;
+
+      const effectivePrice = polesNeeded >= bulkQty ? bulkPrice : regularPrice;
+
+      return {
+        ...material,
+        priceNumber: regularPrice,
+        bulkPrice,
+        effectivePrice,
+        usesBulk: polesNeeded >= bulkQty
+      };
+    })
+    .filter(m => isFinite(m.effectivePrice))
+    .sort((a, b) => a.effectivePrice - b.effectivePrice);
+
+  return matches.length ? [matches[0]] : [];
+});
+
+const rebarCalculation = computed(() => {
+  const spacingFeet = rebarSpacing.value / 12;
+  const lengthPerPole = poleLength.value;
+  const area = foundationArea.value;
+
+  if (area <= 0 || rebarSpacing.value < 1 || lengthPerPole <= 0) {
+    return { totalLength: 0, poles: 0, barCount: 0 };
+  }
+
+  const sideLength = Math.sqrt(area); // assume square slab
+  const barCountPerDirection = Math.ceil(sideLength / spacingFeet) + 1;
+  const totalBars = barCountPerDirection * 2;
+
+  const totalRebarLength = totalBars * sideLength;
+
+  const overlapPerJoint = 1; // ft
+  const overlapCount = totalBars;
+  const adjustedLength = totalRebarLength + overlapCount * overlapPerJoint;
+
+  const polesNeeded = Math.ceil(adjustedLength / lengthPerPole);
+
+  return {
+    totalLength: Math.round(adjustedLength),
+    poles: polesNeeded,
+    barCount: totalBars
+  };
+});
+
 </script>
