@@ -83,23 +83,31 @@
 
       <div class="materials-container">
         <div class="materials-wrapper">
+          <div v-if="loadingMaterials" class="spinner"></div>
           <div
+            v-else
             class="item"
             v-for="(material, index) in filteredMaterials"
             :key="index"
           >
-            <img
-              class="item-img"
-              src="../assets/rebar.webp"
-              alt="Product Image"
-            />
-            <a class="item-title" :href="material.link"><strong>{{ material.title }}</strong></a>
-            <div class="item-price">
-              {{ material.usesBulk ? material.bulkPricing.price : material.price }}
-              <span v-if="material.usesBulk" style="color: green; font-size: 11px;">bulk</span>
-            </div>
-            <div class="item-qty">
-              x{{ rebarCalculation.poles }}<br />
+            <div
+              class="item"
+              v-for="(material, index) in filteredMaterials"
+              :key="index"
+            >
+              <img
+                class="item-img"
+                src="../assets/rebar.webp"
+                alt="Product Image"
+              />
+              <a class="item-title" :href="material.link"><strong>{{ material.title }}</strong></a>
+              <div class="item-price">
+                {{ material.usesBulk ? material.bulkPricing.price : material.price }}
+                <span v-if="material.usesBulk" style="color: green; font-size: 11px;">bulk</span>
+              </div>
+              <div class="item-qty">
+                x{{ rebarCalculation.poles }}<br />
+              </div>
             </div>
           </div>
         </div>
@@ -130,10 +138,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
-
-const CONCRETE_COST_PER_SQFT = 6 // Cost per square foot of concrete
 
 const isOpen = ref(true)
 const blockCount = ref(0)
@@ -154,19 +160,36 @@ const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
 const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
 
 const foundationArea = computed(() => Math.round(blockCount.value * blockSqFt.value))
-const estimatedCost = computed(() => foundationArea.value * CONCRETE_COST_PER_SQFT)
+const estimatedCost = computed(() => {
+  const selected = filteredMaterials.value[0];
+  if (!selected) return 0;
+
+  const poles = rebarCalculation.value.poles;
+  return (selected.effectivePrice * poles).toFixed(2);
+});
+
 
 const materials = ref([]);
+const loadingMaterials = ref(false);
+
+const generateSearchUrl = () => {
+  const sizeEncoded = encodeURIComponent(rebarSize.value);  // "#4" → "%234"
+  const lengthStr = `${poleLength.value}ft`;
+  const query = `rebar ${sizeEncoded} ${lengthStr}`;
+  return `https://www.homedepot.com/s/${encodeURIComponent(query)}?NCNI-5`;
+};
 
 onMounted(async () => {
   try {
-    const res = await fetch('http://localhost:3001/api/materials?url=https://www.homedepot.com/b/Building-Materials-Concrete-Cement-Masonry-Rebar-Accessories-Rebar/N-5yc1vZ1z18g8s');
+    const searchUrl = generateSearchUrl();
+    const res = await fetch(`http://localhost:3001/api/materials?url=${encodeURIComponent(searchUrl)}`);
     const data = await res.json();
     materials.value = data;
   } catch (err) {
     console.error('Error fetching materials:', err);
   }
 });
+
 
 const toggleNav = () => {
   isOpen.value = !isOpen.value
@@ -252,4 +275,21 @@ const rebarCalculation = computed(() => {
   };
 });
 
+const fetchMaterials = async () => {
+  loadingMaterials.value = true;
+  try {
+    const searchUrl = generateSearchUrl();
+    const res = await fetch(`http://localhost:3001/api/materials?url=${encodeURIComponent(searchUrl)}`);
+    const data = await res.json();
+    materials.value = data;
+  } catch (err) {
+    console.error('Error fetching materials:', err);
+  } finally {
+    loadingMaterials.value = false;
+  }
+};
+
+
+onMounted(fetchMaterials);
+watch([rebarSize, poleLength], fetchMaterials);
 </script>

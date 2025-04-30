@@ -69,7 +69,6 @@
 }
 
 .item {
-  border: 1px solid #ddd;
   padding: 8px;
   display: grid;
   grid-template-columns: 50px 1fr auto;
@@ -184,4 +183,19 @@ strong {
 .input-field {
   width: 30%;
   border: 1px solid #ccc;
+}
+
+.spinner {
+  margin: 30px auto;
+  border: 6px solid #eee;
+  border-top: 6px solid #444;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
