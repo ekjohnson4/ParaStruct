@@ -45,39 +45,72 @@
             class="input-field"
           >
         </div>
-        <div class="stat-item">
-          <span class="stat-label">Rebar Spacing (inches):</span>
-          <input
-            v-model.number="rebarSpacing"
-            type="number"
-            min="6"
-            max="24"
-            step="1"
-            placeholder="Spacing (e.g., 12)"
-            class="input-field"
-          >
+        <div class="accordion" id="accordionConcrete">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConcrete" aria-expanded="true" aria-controls="collapseConcrete">
+                Concrete Settings
+              </button>
+            </h2>
+            <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <div class="stat-item">
+                  <span class="stat-label">Bag Weight (lbs):</span>
+                  <select v-model.number="concreteBagWeight" class="input-field">
+                    <option :value="50">50 lbs</option>
+                    <option :value="60">60 lbs</option>
+                    <option :value="80">80 lbs</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-item">
-          <span class="stat-label">Rebar Length (feet):</span>
-          <input
-            v-model.number="poleLength"
-            type="number"
-            min="5"
-            max="40"
-            step="1"
-            placeholder="e.g., 10"
-            class="input-field"
-          >
-        </div>
-
-        <div class="stat-item">
-          <span class="stat-label">Rebar Size:</span>
-          <select v-model="rebarSize" class="input-field">
-            <option value="#3">#3 (3/8")</option>
-            <option value="#4">#4 (1/2")</option>
-            <option value="#5">#5 (5/8")</option>
-            <option value="#6">#6 (3/4")</option>
-          </select>
+        <div class="accordion" id="accordionRebar">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRebar" aria-expanded="true" aria-controls="collapseRebar">
+                Rebar Settings
+              </button>
+            </h2>
+            <div id="collapseRebar" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+              <div class="accordion-body">
+                <div class="stat-item">
+                  <span class="stat-label">Rebar Spacing (inches):</span>
+                  <input
+                    v-model.number="rebarSpacing"
+                    type="number"
+                    min="6"
+                    max="24"
+                    step="1"
+                    placeholder="Spacing (e.g., 12)"
+                    class="input-field"
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Rebar Length (feet):</span>
+                  <input
+                    v-model.number="poleLength"
+                    type="number"
+                    min="5"
+                    max="40"
+                    step="1"
+                    placeholder="e.g., 10"
+                    class="input-field"
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Rebar Size:</span>
+                  <select v-model="rebarSize" class="input-field">
+                    <option value="#3">#3 (3/8")</option>
+                    <option value="#4">#4 (1/2")</option>
+                    <option value="#5">#5 (5/8")</option>
+                    <option value="#6">#6 (3/4")</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -90,24 +123,28 @@
             v-for="(material, index) in filteredMaterials"
             :key="index"
           >
-            <div
-              class="item"
-              v-for="(material, index) in filteredMaterials"
-              :key="index"
-            >
-              <img
-                class="item-img"
-                src="../assets/rebar.webp"
-                alt="Product Image"
-              />
-              <a class="item-title" :href="material.link"><strong>{{ material.title }}</strong></a>
-              <div class="item-price">
-                {{ material.usesBulk ? material.bulkPricing.price : material.price }}
-                <span v-if="material.usesBulk" style="color: green; font-size: 11px;">bulk</span>
-              </div>
-              <div class="item-qty">
-                x{{ rebarCalculation.poles }}<br />
-              </div>
+            <img
+              class="item-img"
+              :src="getMaterialImage(material.type)"
+              :alt="material.type + ' image'"
+            />
+            <a class="item-title" :href="material.link" target="_blank">
+              <strong>{{ material.title }}</strong>
+            </a>
+            <div class="item-price">
+              {{ material.usesBulk ? material.bulkPricing.price : material.price }}
+              <span
+                v-if="material.bulkPricing && !material.usesBulk"
+                class="tooltip-hint"
+                @mouseenter="showTooltip($event, material)"
+                @mouseleave="hideTooltip"
+              >
+                ⓘ
+              </span>
+              <span v-if="material.usesBulk" class="bulk">bulk</span>
+            </div>
+            <div class="item-qty">
+              x{{ material.type === 'concrete' ? concreteBagsNeeded : rebarCalculation.poles }}
             </div>
           </div>
         </div>
@@ -135,6 +172,14 @@
       @block-removed="decrementBlocks"
     />
   </div>
+
+  <div
+    v-if="tooltipData.visible"
+    class="floating-tooltip"
+    :style="{ top: tooltipData.y + 'px', left: tooltipData.x + 'px' }"
+  >
+    {{ tooltipData.text }}
+  </div>
 </template>
 
 <script setup>
@@ -142,9 +187,15 @@ import { ref, computed, onMounted, watch } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
 
 const isOpen = ref(true)
+const sidebarWidth = computed(() => isOpen.value ? '250px' : '0px')
+const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
+const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
+
 const blockCount = ref(0)
 const blockSqFt = ref(4)
 const foundationThickness = ref(8) // default 8 inches
+
+// Rebar
 const rebarSpacing = ref(12);
 const poleLength = ref(10);
 const rebarSize = ref('#4');
@@ -155,41 +206,62 @@ const sizeMap = {
   '#6': ['3/4', '0.75']
 };
 
-const sidebarWidth = computed(() => isOpen.value ? '250px' : '0px')
-const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
-const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
+const concreteYieldPerBag = computed(() => {
+  const yields = {
+    50: 0.375,
+    60: 0.45,
+    80: 0.6
+  };
+  return yields[concreteBagWeight.value] || 0.6;
+});
+
+//Concrete
+const concreteBagWeight = ref(80);
+const concreteBagsNeeded = computed(() => {
+  const area = foundationArea.value;
+  const thicknessFeet = foundationThickness.value / 12;
+  const volume = area * thicknessFeet; // cubic feet
+  return Math.ceil(volume / concreteYieldPerBag.value);
+});
+
+
+const materialSpecs = computed(() => ({
+  foundation: [
+    {
+      name: 'rebar',
+      query: `rebar ${rebarSize.value} ${poleLength.value}ft`,
+      quantity: rebarCalculation.value.poles,
+      sizeAliases: sizeMap[rebarSize.value] || []
+    },
+    {
+      name: 'concrete',
+      query: `high strength concrete mix ${concreteBagWeight.value} lb`,
+      quantity: concreteBagsNeeded.value,
+      sizeAliases: []
+    }
+  ],
+  // add 'drywall', 'roofing', etc. here in the future
+}));
+
+const getMaterialImage = (type) => {
+  switch (type) {
+    case 'concrete':
+      return new URL('../assets/concrete.webp', import.meta.url).href;
+    case 'rebar':
+    default:
+      return new URL('../assets/rebar.webp', import.meta.url).href;
+  }
+};
 
 const foundationArea = computed(() => Math.round(blockCount.value * blockSqFt.value))
 const estimatedCost = computed(() => {
-  const selected = filteredMaterials.value[0];
-  if (!selected) return 0;
-
-  const poles = rebarCalculation.value.poles;
-  return (selected.effectivePrice * poles).toFixed(2);
+  return filteredMaterials.value.reduce((total, material) => {
+    return total + (material.effectivePrice * material.quantity);
+  }, 0).toFixed(2);
 });
 
-
-const materials = ref([]);
+const allMaterials = ref({});
 const loadingMaterials = ref(false);
-
-const generateSearchUrl = () => {
-  const sizeEncoded = encodeURIComponent(rebarSize.value);  // "#4" → "%234"
-  const lengthStr = `${poleLength.value}ft`;
-  const query = `rebar ${sizeEncoded} ${lengthStr}`;
-  return `https://www.homedepot.com/s/${encodeURIComponent(query)}?NCNI-5`;
-};
-
-onMounted(async () => {
-  try {
-    const searchUrl = generateSearchUrl();
-    const res = await fetch(`http://localhost:3001/api/materials?url=${encodeURIComponent(searchUrl)}`);
-    const data = await res.json();
-    materials.value = data;
-  } catch (err) {
-    console.error('Error fetching materials:', err);
-  }
-});
-
 
 const toggleNav = () => {
   isOpen.value = !isOpen.value
@@ -204,47 +276,46 @@ const decrementBlocks = () => {
 }
 
 const filteredMaterials = computed(() => {
-  const selectedSize = rebarSize.value;
-  const sizeAliases = sizeMap[selectedSize] || [];
-  const polesNeeded = rebarCalculation.value.poles;
+  const foundationMaterials = materialSpecs.value.foundation.map(spec => {
+    const raw = allMaterials.value[spec.name] || [];
 
-  const matches = materials.value
-    .filter((material) => {
-      const lengthMatch = material.title.match(/(\d+)\s*ft/);
-      if (!lengthMatch) return false;
-      const materialLength = parseInt(lengthMatch[1]);
-      if (materialLength !== poleLength.value) return false;
+    const processed = raw
+      .filter(m => {
+        if (spec.name === 'rebar') {
+          const lengthMatch = m.title.match(/(\d+)\s*ft/);
+          if (!lengthMatch) return false;
+          if (parseInt(lengthMatch[1]) !== poleLength.value) return false;
 
-      const titleLower = material.title.toLowerCase();
-      const matchesSize =
-        titleLower.includes(selectedSize.toLowerCase()) ||
-        sizeAliases.some(alias => titleLower.includes(alias));
+          const titleLower = m.title.toLowerCase();
+          return titleLower.includes(rebarSize.value.toLowerCase()) ||
+            spec.sizeAliases.some(alias => titleLower.includes(alias));
+        }
 
-      return matchesSize;
-    })
-    .map((material) => {
-      const regularPrice = parseFloat(
-        material.price?.replace(/[^0-9.]/g, '') || 'Infinity'
-      );
+        return true; // pass through for other materials like concrete
+      })
+      .map(m => {
+        const regularPrice = parseFloat(m.price?.replace(/[^0-9.]/g, '') || 'Infinity');
+        const bulkQty = parseInt(m.bulkPricing?.quantity) || Infinity;
+        const bulkPrice = parseFloat(m.bulkPricing?.price?.replace(/[^0-9.]/g, '')) || Infinity;
+        const effectivePrice = spec.quantity >= bulkQty ? bulkPrice : regularPrice;
 
-      const hasBulk = material.bulkPricing && material.bulkPricing.quantity && material.bulkPricing.price;
-      const bulkQty = hasBulk ? parseInt(material.bulkPricing.quantity) : Infinity;
-      const bulkPrice = hasBulk ? parseFloat(material.bulkPricing.price.replace(/[^0-9.]/g, '')) : Infinity;
+        return {
+          ...m,
+          type: spec.name,
+          quantity: spec.quantity,
+          priceNumber: regularPrice,
+          bulkPrice,
+          effectivePrice,
+          usesBulk: spec.quantity >= bulkQty
+        };
+      })
+      .filter(m => isFinite(m.effectivePrice))
+      .sort((a, b) => a.effectivePrice - b.effectivePrice);
 
-      const effectivePrice = polesNeeded >= bulkQty ? bulkPrice : regularPrice;
+    return processed.length ? processed[0] : null;
+  });
 
-      return {
-        ...material,
-        priceNumber: regularPrice,
-        bulkPrice,
-        effectivePrice,
-        usesBulk: polesNeeded >= bulkQty
-      };
-    })
-    .filter(m => isFinite(m.effectivePrice))
-    .sort((a, b) => a.effectivePrice - b.effectivePrice);
-
-  return matches.length ? [matches[0]] : [];
+  return foundationMaterials.filter(Boolean);
 });
 
 const rebarCalculation = computed(() => {
@@ -275,21 +346,39 @@ const rebarCalculation = computed(() => {
   };
 });
 
-const fetchMaterials = async () => {
+const fetchAllMaterials = async () => {
   loadingMaterials.value = true;
   try {
-    const searchUrl = generateSearchUrl();
-    const res = await fetch(`http://localhost:3001/api/materials?url=${encodeURIComponent(searchUrl)}`);
-    const data = await res.json();
-    materials.value = data;
+    const fetched = {};
+    for (const material of materialSpecs.value.foundation) {
+      const url = `https://www.homedepot.com/s/${encodeURIComponent(material.query)}?NCNI-5`;
+      const res = await fetch(`http://localhost:3001/api/materials?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      fetched[material.name] = data;
+    }
+    allMaterials.value = fetched;
   } catch (err) {
-    console.error('Error fetching materials:', err);
+    console.error('Failed to fetch materials:', err);
   } finally {
     loadingMaterials.value = false;
   }
 };
 
+const tooltipData = ref({ visible: false, x: 0, y: 0, text: '' });
 
-onMounted(fetchMaterials);
-watch([rebarSize, poleLength], fetchMaterials);
+const showTooltip = (event, material) => {
+  tooltipData.value = {
+    visible: true,
+    x: event.clientX,
+    y: event.clientY - 20, // raise it slightly
+    text: `Bulk price ${material.bulkPricing.price} for ${material.bulkPricing.quantity}+`
+  };
+};
+
+const hideTooltip = () => {
+  tooltipData.value.visible = false;
+};
+
+onMounted(fetchAllMaterials);
+watch([rebarSize, poleLength, concreteBagWeight], fetchAllMaterials);
 </script>
