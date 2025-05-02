@@ -291,6 +291,14 @@ const filteredMaterials = computed(() => {
             spec.sizeAliases.some(alias => titleLower.includes(alias));
         }
 
+        if (spec.name === 'concrete') {
+          const title = m.title.toLowerCase();
+          const weightMatch = title.match(/(\d+)\s*(lb|lbs)/i);
+          if (!weightMatch) return false;
+          const weight = parseInt(weightMatch[1]);
+          if (weight !== concreteBagWeight.value) return false;
+        }
+
         return true; // pass through for other materials like concrete
       })
       .map(m => {
