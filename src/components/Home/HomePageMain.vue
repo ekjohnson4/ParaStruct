@@ -22,6 +22,7 @@ let cubeGeo, cubeMaterial
 const objects = []
 let isMouseDown = false
 let lastPlacedPosition = new THREE.Vector3()
+const placedKeys = new Set()
 
 const props = defineProps({
   isOpen: Boolean,
@@ -162,6 +163,13 @@ function init() {
   animate()
 }
 
+function positionKey(position) {
+  // Always use grid units to build the key, matching snapToGrid()
+  const x = Math.floor(position.x / 50)
+  const z = Math.floor(position.z / 50)
+  return `${x}_${z}`
+}
+
 function animate() {
   requestAnimationFrame(animate)
   if (controls.enabled) {
@@ -180,13 +188,9 @@ function onPointerMove(event) {
   const intersects = raycaster.intersectObjects(objects, false)
   if (intersects.length > 0) {
     const intersect = intersects[0]
-    const position = new THREE.Vector3()
-      .copy(intersect.point)
-      .add(intersect.face.normal)
-      .divideScalar(50)
-      .floor()
-      .multiplyScalar(50)
-      .addScalar(25)
+    const position = snapToGrid(
+      new THREE.Vector3().copy(intersect.point).add(intersect.face.normal)
+    )
 
     position.y = props.foundationThickness / 2
 
@@ -209,6 +213,18 @@ function onPointerMove(event) {
   }
 }
 
+function snapToGrid(pos) {
+  const adjusted = new THREE.Vector3()
+    .copy(pos)
+    .divideScalar(50)
+    .floor()
+    .multiplyScalar(50)
+    .addScalar(25)
+
+  adjusted.y = props.foundationThickness * Math.sqrt(1 / props.blockSqFt) / 2
+  return adjusted
+}
+
 function onPointerDown(event) {
   // Skip if controls are active (CTRL is pressed)
   if (controls.enabled) return
@@ -225,17 +241,15 @@ function onPointerDown(event) {
       if (intersect.object !== plane) {
         scene.remove(intersect.object)
         objects.splice(objects.indexOf(intersect.object), 1)
+        const key = positionKey(intersect.object.position)
+        placedKeys.delete(key)
         emit('block-removed')
       }
     } else if (!isCtrlDown) {
       // Place initial block
-      const position = new THREE.Vector3()
-        .copy(intersect.point)
-        .add(intersect.face.normal)
-        .divideScalar(50)
-        .floor()
-        .multiplyScalar(50)
-        .addScalar(25)
+      const position = snapToGrid(
+        new THREE.Vector3().copy(intersect.point).add(intersect.face.normal)
+      )
 
       placeBlock(position)
       lastPlacedPosition.copy(position)
@@ -248,18 +262,8 @@ function onPointerUp() {
 }
 
 function isValidPlacement(position) {
-  // Check if there's already a block at this position
-  const blockExists = objects.some(obj => {
-    if (obj === plane) return false
-    return obj.position.equals(position)
-  })
-
-  // If we're not placing on the ground plane, prevent placement
-  if (position.y > 25) {
-    return false // Prevent placing blocks above ground level
-  }
-
-  return !blockExists
+  const key = positionKey(position)
+  return !placedKeys.has(key) && position.y <= 25
 }
 
 function placeBlock(position) {
@@ -275,6 +279,7 @@ function placeBlock(position) {
     )
     scene.add(voxel)
     objects.push(voxel)
+    placedKeys.add(positionKey(position))
     emit('block-added')
   }
 }
