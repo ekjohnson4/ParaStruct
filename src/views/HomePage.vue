@@ -112,6 +112,40 @@
             </div>
           </div>
         </div>
+
+        <div class="accordion" id="accordionWood">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWood" aria-expanded="true" aria-controls="collapseWood">
+                Wood Settings
+              </button>
+            </h2>
+            <div id="collapseWood" class="accordion-collapse collapse" data-bs-parent="#accordionWood">
+              <div class="accordion-body">
+                <div class="stat-item">
+                  <span class="stat-label">Wood Size:</span>
+                  <select v-model="woodSize" class="input-field">
+                    <option value="2x4">2x4</option>
+                    <option value="2x6">2x6</option>
+                    <option value="2x8">2x8</option>
+                  </select>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Wood Length (ft):</span>
+                  <input
+                    v-model.number="woodLength"
+                    type="number"
+                    min="6"
+                    max="16"
+                    step="2"
+                    class="input-field"
+                    placeholder="e.g., 10"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="materials-container">
@@ -144,7 +178,15 @@
               <span v-if="material.usesBulk" class="bulk">bulk</span>
             </div>
             <div class="item-qty">
-              x{{ material.type === 'concrete' ? concreteBagsNeeded : rebarCalculation.poles }}
+              x{{
+                material.type === 'concrete'
+                  ? concreteBagsNeeded
+                  : material.type === 'rebar'
+                    ? rebarCalculation.poles
+                    : material.type === 'wood'
+                      ? woodCalculation.boards
+                      : 0
+              }}
             </div>
           </div>
         </div>
@@ -190,10 +232,13 @@ const isOpen = ref(true)
 const sidebarWidth = computed(() => isOpen.value ? '250px' : '0px')
 const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
 const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
+const loadingMaterials = ref(false);
 
 const blockCount = ref(0)
 const blockSqFt = ref(4)
 const foundationThickness = ref(8) // default 8 inches
+
+const allMaterials = ref({});
 
 // Rebar
 const rebarSpacing = ref(12);
@@ -205,126 +250,6 @@ const sizeMap = {
   '#5': ['5/8', '0.625'],
   '#6': ['3/4', '0.75']
 };
-
-const concreteYieldPerBag = computed(() => {
-  const yields = {
-    50: 0.375,
-    60: 0.45,
-    80: 0.6
-  };
-  return yields[concreteBagWeight.value] || 0.6;
-});
-
-//Concrete
-const concreteBagWeight = ref(80);
-const concreteBagsNeeded = computed(() => {
-  const area = foundationArea.value;
-  const thicknessFeet = foundationThickness.value / 12;
-  const volume = area * thicknessFeet; // cubic feet
-  return Math.ceil(volume / concreteYieldPerBag.value);
-});
-
-
-const materialSpecs = computed(() => ({
-  foundation: [
-    {
-      name: 'rebar',
-      query: `rebar ${rebarSize.value} ${poleLength.value}ft`,
-      quantity: rebarCalculation.value.poles,
-      sizeAliases: sizeMap[rebarSize.value] || []
-    },
-    {
-      name: 'concrete',
-      query: `high strength concrete mix ${concreteBagWeight.value} lb`,
-      quantity: concreteBagsNeeded.value,
-      sizeAliases: []
-    }
-  ],
-  // add 'drywall', 'roofing', etc. here in the future
-}));
-
-const getMaterialImage = (type) => {
-  switch (type) {
-    case 'concrete':
-      return new URL('../assets/concrete.webp', import.meta.url).href;
-    case 'rebar':
-    default:
-      return new URL('../assets/rebar.webp', import.meta.url).href;
-  }
-};
-
-const foundationArea = computed(() => Math.round(blockCount.value * blockSqFt.value))
-const estimatedCost = computed(() => {
-  return filteredMaterials.value.reduce((total, material) => {
-    return total + (material.effectivePrice * material.quantity);
-  }, 0).toFixed(2);
-});
-
-const allMaterials = ref({});
-const loadingMaterials = ref(false);
-
-const toggleNav = () => {
-  isOpen.value = !isOpen.value
-}
-
-const incrementBlocks = () => {
-  blockCount.value++
-}
-
-const decrementBlocks = () => {
-  blockCount.value--
-}
-
-const filteredMaterials = computed(() => {
-  const foundationMaterials = materialSpecs.value.foundation.map(spec => {
-    const raw = allMaterials.value[spec.name] || [];
-
-    const processed = raw
-      .filter(m => {
-        if (spec.name === 'rebar') {
-          const lengthMatch = m.title.match(/(\d+)\s*ft/);
-          if (!lengthMatch) return false;
-          if (parseInt(lengthMatch[1]) !== poleLength.value) return false;
-
-          const titleLower = m.title.toLowerCase();
-          return titleLower.includes(rebarSize.value.toLowerCase()) ||
-            spec.sizeAliases.some(alias => titleLower.includes(alias));
-        }
-
-        if (spec.name === 'concrete') {
-          const title = m.title.toLowerCase();
-          const weightMatch = title.match(/(\d+)\s*(lb|lbs)/i);
-          if (!weightMatch) return false;
-          const weight = parseInt(weightMatch[1]);
-          if (weight !== concreteBagWeight.value) return false;
-        }
-
-        return true; // pass through for other materials like concrete
-      })
-      .map(m => {
-        const regularPrice = parseFloat(m.price?.replace(/[^0-9.]/g, '') || 'Infinity');
-        const bulkQty = parseInt(m.bulkPricing?.quantity) || Infinity;
-        const bulkPrice = parseFloat(m.bulkPricing?.price?.replace(/[^0-9.]/g, '')) || Infinity;
-        const effectivePrice = spec.quantity >= bulkQty ? bulkPrice : regularPrice;
-
-        return {
-          ...m,
-          type: spec.name,
-          quantity: spec.quantity,
-          priceNumber: regularPrice,
-          bulkPrice,
-          effectivePrice,
-          usesBulk: spec.quantity >= bulkQty
-        };
-      })
-      .filter(m => isFinite(m.effectivePrice))
-      .sort((a, b) => a.effectivePrice - b.effectivePrice);
-
-    return processed.length ? processed[0] : null;
-  });
-
-  return foundationMaterials.filter(Boolean);
-});
 
 const rebarCalculation = computed(() => {
   const spacingFeet = rebarSpacing.value / 12;
@@ -354,6 +279,147 @@ const rebarCalculation = computed(() => {
   };
 });
 
+// Concrete
+const concreteBagWeight = ref(80);
+const concreteBagsNeeded = computed(() => {
+  const area = foundationArea.value;
+  const thicknessFeet = foundationThickness.value / 12;
+  const volume = area * thicknessFeet; // cubic feet
+  return Math.ceil(volume / concreteYieldPerBag.value);
+});
+
+const concreteYieldPerBag = computed(() => {
+  const yields = {
+    50: 0.375,
+    60: 0.45,
+    80: 0.6
+  };
+  return yields[concreteBagWeight.value] || 0.6;
+});
+
+// Wood
+const woodSize = ref('2x4');
+const woodLength = ref(10);
+
+const woodCalculation = computed(() => {
+  const area = foundationArea.value;
+  const sideLength = Math.sqrt(area); // assume square slab
+
+  const perimeter = sideLength * 4; // for square slab
+  const boardsNeeded = Math.ceil(perimeter / woodLength.value);
+
+  return {
+    perimeter: Math.round(perimeter),
+    boards: boardsNeeded
+  };
+});
+
+const materialSpecs = computed(() => ({
+  foundation: [
+    {
+      name: 'rebar',
+      query: `rebar ${rebarSize.value} ${poleLength.value}ft`,
+      quantity: rebarCalculation.value.poles,
+      sizeAliases: sizeMap[rebarSize.value] || []
+    },
+    {
+      name: 'concrete',
+      query: `high strength concrete mix ${concreteBagWeight.value} lb`,
+      quantity: concreteBagsNeeded.value,
+      sizeAliases: []
+    },
+    {
+      name: 'wood',
+      query: `${woodSize.value} pressure treated lumber ${woodLength.value}ft`,
+      quantity: woodCalculation.value.boards,
+    }
+  ],
+  // add 'drywall', 'roofing', etc. here in the future
+}));
+
+const getMaterialImage = (type) => {
+  switch (type) {
+    case 'concrete':
+      return new URL('../assets/concrete.webp', import.meta.url).href;
+    case 'wood':
+      return new URL('../assets/wood.webp', import.meta.url).href;
+    case 'rebar':
+    default:
+      return new URL('../assets/rebar.webp', import.meta.url).href;
+  }
+};
+
+const filteredMaterials = computed(() => {
+  const foundationMaterials = materialSpecs.value.foundation.map(spec => {
+    const raw = allMaterials.value[spec.name] || [];
+
+    const processed = raw
+      .filter(m => {
+        if (spec.name === 'rebar') {
+          const lengthMatch = m.title.match(/(\d+)\s*ft/);
+          if (!lengthMatch) return false;
+          if (parseInt(lengthMatch[1]) !== poleLength.value) return false;
+
+          const titleLower = m.title.toLowerCase();
+          return titleLower.includes(rebarSize.value.toLowerCase()) ||
+            spec.sizeAliases.some(alias => titleLower.includes(alias));
+        }
+
+        if (spec.name === 'concrete') {
+          const title = m.title.toLowerCase();
+          const weightMatch = title.match(/(\d+)\s*(lb|lbs)/i);
+          if (!weightMatch) return false;
+          const weight = parseInt(weightMatch[1]);
+          if (weight !== concreteBagWeight.value) return false;
+        }
+
+        if (spec.name === 'wood') {
+          const title = m.title.toLowerCase();
+
+          const dims = title.match(/(\d+)\s*in\.\s*x\s*(\d+)\s*in\./);
+          const lengthMatch = title.match(/(\d+)\s*ft/);
+
+          if (!dims || !lengthMatch) return false;
+
+          const [ , width, height ] = dims.map(Number);
+          const matchedLength = parseInt(lengthMatch[1]);
+
+          const [expectedW, expectedH] = woodSize.value.split('x').map(Number);
+
+          return (
+            matchedLength === woodLength.value &&
+            ((width === expectedW && height === expectedH) ||
+             (width === expectedH && height === expectedW)) // account for flipped dimensions
+          );
+        }
+
+        return true; // pass through for other materials like concrete
+      })
+      .map(m => {
+        const regularPrice = parseFloat(m.price?.replace(/[^0-9.]/g, '') || 'Infinity');
+        const bulkQty = parseInt(m.bulkPricing?.quantity) || Infinity;
+        const bulkPrice = parseFloat(m.bulkPricing?.price?.replace(/[^0-9.]/g, '')) || Infinity;
+        const effectivePrice = spec.quantity >= bulkQty ? bulkPrice : regularPrice;
+
+        return {
+          ...m,
+          type: spec.name,
+          quantity: spec.quantity,
+          priceNumber: regularPrice,
+          bulkPrice,
+          effectivePrice,
+          usesBulk: spec.quantity >= bulkQty
+        };
+      })
+      .filter(m => isFinite(m.effectivePrice))
+      .sort((a, b) => a.effectivePrice - b.effectivePrice);
+
+    return processed.length ? processed[0] : null;
+  });
+
+  return foundationMaterials.filter(Boolean);
+});
+
 const fetchAllMaterials = async () => {
   loadingMaterials.value = true;
   try {
@@ -371,6 +437,25 @@ const fetchAllMaterials = async () => {
     loadingMaterials.value = false;
   }
 };
+
+const foundationArea = computed(() => Math.round(blockCount.value * blockSqFt.value))
+const estimatedCost = computed(() => {
+  return filteredMaterials.value.reduce((total, material) => {
+    return total + (material.effectivePrice * material.quantity);
+  }, 0).toFixed(2);
+});
+
+const toggleNav = () => {
+  isOpen.value = !isOpen.value
+}
+
+const incrementBlocks = () => {
+  blockCount.value++
+}
+
+const decrementBlocks = () => {
+  blockCount.value--
+}
 
 const tooltipData = ref({ visible: false, x: 0, y: 0, text: '' });
 
