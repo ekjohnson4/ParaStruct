@@ -210,8 +210,8 @@
       :isOpen="isOpen"
       :blockSqFt="blockSqFt"
       :foundationThickness="foundationThickness"
-      @block-added="incrementBlocks"
-      @block-removed="decrementBlocks"
+      @block-added="addBlock"
+      @block-removed="removeBlock"
     />
   </div>
 
@@ -234,6 +234,7 @@ const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
 const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
 const loadingMaterials = ref(false);
 
+const placedBlocks = ref(new Set());
 const blockCount = ref(0)
 const blockSqFt = ref(4)
 const foundationThickness = ref(8) // default 8 inches
@@ -302,17 +303,37 @@ const woodSize = ref('2x4');
 const woodLength = ref(10);
 
 const woodCalculation = computed(() => {
-  const area = foundationArea.value;
-  const sideLength = Math.sqrt(area); // assume square slab
+  const blockSizeFeet = Math.sqrt(blockSqFt.value);
+  let edgeCount = 0;
 
-  const perimeter = sideLength * 4; // for square slab
-  const boardsNeeded = Math.ceil(perimeter / woodLength.value);
+  const directions = [
+    [0, 1],  // north
+    [0, -1], // south
+    [1, 0],  // east
+    [-1, 0]  // west
+  ];
+
+  const hasBlock = (x, z) => placedBlocks.value.has(`${x},${z}`);
+
+  for (const key of placedBlocks.value) {
+    const [x, z] = key.split(',').map(Number);
+    for (const [dx, dz] of directions) {
+      if (!hasBlock(x + dx, z + dz)) {
+        edgeCount++;
+      }
+    }
+  }
+
+  const totalFeet = edgeCount * blockSizeFeet;
+  const boardsNeeded = Math.ceil(totalFeet / woodLength.value);
 
   return {
-    perimeter: Math.round(perimeter),
+    edges: edgeCount,
+    linearFeet: Math.round(totalFeet),
     boards: boardsNeeded
   };
 });
+
 
 const materialSpecs = computed(() => ({
   foundation: [
@@ -449,13 +470,15 @@ const toggleNav = () => {
   isOpen.value = !isOpen.value
 }
 
-const incrementBlocks = () => {
+const addBlock = (x, z) => {
   blockCount.value++
-}
+  placedBlocks.value.add(`${x},${z}`);
+};
 
-const decrementBlocks = () => {
+const removeBlock = (x, z) => {
   blockCount.value--
-}
+  placedBlocks.value.delete(`${x},${z}`);
+};
 
 const tooltipData = ref({ visible: false, x: 0, y: 0, text: '' });
 
@@ -473,5 +496,5 @@ const hideTooltip = () => {
 };
 
 onMounted(fetchAllMaterials);
-watch([rebarSize, poleLength, concreteBagWeight], fetchAllMaterials);
+watch([rebarSize, poleLength, concreteBagWeight, woodSize, woodLength], fetchAllMaterials);
 </script>

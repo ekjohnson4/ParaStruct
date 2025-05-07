@@ -237,13 +237,15 @@ function onPointerDown(event) {
   if (intersects.length > 0) {
     const intersect = intersects[0]
     if (isShiftDown) {
-      // Remove block
       if (intersect.object !== plane) {
         scene.remove(intersect.object)
         objects.splice(objects.indexOf(intersect.object), 1)
+
         const key = positionKey(intersect.object.position)
         placedKeys.delete(key)
-        emit('block-removed')
+
+        const [x, z] = key.split('_').map(Number)
+        emit('block-removed', x, z)
       }
     } else if (!isCtrlDown) {
       // Place initial block
@@ -271,16 +273,15 @@ function placeBlock(position) {
 
   if (isValidPlacement(position)) {
     const voxel = new THREE.Mesh(cubeGeo, cubeMaterial)
-    // Adjust y position to align with ground
-    voxel.position.set(
-      position.x,
-      scaledThickness / 2, // Center block on ground
-      position.z
-    )
+    voxel.position.set(position.x, scaledThickness / 2, position.z)
     scene.add(voxel)
     objects.push(voxel)
-    placedKeys.add(positionKey(position))
-    emit('block-added')
+
+    const key = positionKey(position)
+    placedKeys.add(key)
+
+    const [x, z] = key.split('_').map(Number)
+    emit('block-added', x, z)
   }
 }
 
