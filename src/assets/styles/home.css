@@ -45,11 +45,13 @@
   color: white;
 }
 
-.config-content {
+.config-container {
   flex-grow: 1;
   padding-bottom: 20px;
-  padding-right: 20px;
+  padding-right: 5px;
   overflow: auto;
+  scrollbar-gutter: stable;
+  height: 50%;
 }
 
 .materials-container {
@@ -59,17 +61,18 @@
   padding-right: 20px;
   border-top: 1px solid #333;
   color: black;
+  height: 40%;
 }
 
-.materials-wrapper{
+.materials-wrapper {
   border-style: solid;
   border-color: white;
   background-color: white;
-  max-height: 400px;
   overflow: scroll;
   display: flex;
   flex-wrap: wrap;
   gap: 16px;
+  height: 100%;
 }
 
 .item {
@@ -116,6 +119,7 @@
   padding-top: 20px;
   padding-right: 20px;
   border-top: 1px solid #333;
+  height: 10%;
 }
 
 .bulk {

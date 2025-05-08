@@ -22,7 +22,7 @@
     @click.stop
   >
     <div class="sidebar-content">
-      <div class="config-content">
+      <div class="config-container">
         <h4>Config</h4>
         <div class="stat-item">
           <span class="stat-label">SqFt per Block:</span>
@@ -333,7 +333,6 @@ const woodCalculation = computed(() => {
     boards: boardsNeeded
   };
 });
-
 
 const materialSpecs = computed(() => ({
   foundation: [
