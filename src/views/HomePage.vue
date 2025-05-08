@@ -430,6 +430,10 @@ const getMaterialImage = (type) => {
       return new URL('../assets/concrete.webp', import.meta.url).href;
     case 'wood':
       return new URL('../assets/wood.webp', import.meta.url).href;
+    case 'sealer':
+      return new URL('../assets/sealer.webp', import.meta.url).href;
+    case 'gravel':
+      return new URL('../assets/gravel.webp', import.meta.url).href;
     case 'rebar':
     default:
       return new URL('../assets/rebar.webp', import.meta.url).href;
