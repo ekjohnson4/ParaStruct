@@ -209,10 +209,12 @@
                   : material.type === 'rebar'
                     ? rebarCalculation.poles
                     : material.type === 'gravel'
-                      ? gravelCalculation.volumeCubicFeet
+                      ? material.quantity
                       : material.type === 'wood'
                         ? woodCalculation.boards
-                        : 0
+                        : material.type === 'sealer'
+                          ? material.quantity
+                          : 0
               }}
             </div>
           </div>
@@ -379,6 +381,16 @@ const extractVolumeFromTitle = (title) => {
   return cuFtMatch ? parseFloat(cuFtMatch[1]) : null;
 };
 
+// Sealer
+const sealerCoveragePerGallon = 300 // sq ft per gallon (can be made user-configurable)
+const concreteSealerCalculation = computed(() => {
+  const area = foundationArea.value
+  const gallonsNeeded = area / sealerCoveragePerGallon
+  return {
+    gallons: gallonsNeeded,
+  }
+})
+
 const materialSpecs = computed(() => ({
   foundation: [
     {
@@ -402,6 +414,11 @@ const materialSpecs = computed(() => ({
       name: 'gravel',
       query: `drainage gravel bulk bag ton`,
       quantity: gravelCalculation.value.tons
+    },
+    {
+      name: 'sealer',
+      query: 'water sealers concrete sealer clear',
+      quantity: concreteSealerCalculation.value.gallons
     }
   ],
   // add 'drywall', 'roofing', etc. here in the future
@@ -463,7 +480,7 @@ const filteredMaterials = computed(() => {
           );
         }
 
-        return true; // pass through for other materials like concrete
+        return true; // pass through for other materials
       })
     .map(m => {
       const regularPrice = parseFloat(m.price?.replace(/[^0-9.]/g, '') || 'Infinity');
@@ -472,7 +489,7 @@ const filteredMaterials = computed(() => {
 
       if (spec.name === 'gravel') {
         const volumePerUnit = extractVolumeFromTitle(m.title) || 0.5; // fallback
-        const quantityNeeded = Math.ceil(gravelCalculation.value.volume / volumePerUnit);
+        const quantityNeeded = Math.ceil(gravelCalculation.value.volumeCubicFeet / volumePerUnit);
 
         return {
           ...m,
@@ -483,6 +500,27 @@ const filteredMaterials = computed(() => {
           effectivePrice: quantityNeeded >= bulkQty ? bulkPrice : regularPrice,
           usesBulk: quantityNeeded >= bulkQty
         };
+      }
+
+      if (spec.name === 'sealer') {
+        const titleLower = m.title.toLowerCase()
+
+        let unitGallons = 1 // default to 1 gallon
+        if (titleLower.includes('5 gallon')) unitGallons = 5
+        else if (titleLower.includes('1 gallon')) unitGallons = 1
+        else if (titleLower.includes('quart')) unitGallons = 0.25
+
+        const quantityNeeded = Math.ceil(spec.quantity / unitGallons)
+
+        return {
+          ...m,
+          type: 'sealer',
+          quantity: quantityNeeded,
+          priceNumber: regularPrice,
+          bulkPrice,
+          effectivePrice: quantityNeeded >= bulkQty ? bulkPrice : regularPrice,
+          usesBulk: quantityNeeded >= bulkQty
+        }
       }
 
       return {
