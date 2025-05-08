@@ -52,7 +52,7 @@
                 Concrete Settings
               </button>
             </h2>
-            <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+            <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionConcrete">
               <div class="accordion-body">
                 <div class="stat-item">
                   <span class="stat-label">Bag Weight (lbs):</span>
@@ -73,7 +73,7 @@
                 Rebar Settings
               </button>
             </h2>
-            <div id="collapseRebar" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+            <div id="collapseRebar" class="accordion-collapse collapse" data-bs-parent="#accordionRebar">
               <div class="accordion-body">
                 <div class="stat-item">
                   <span class="stat-label">Rebar Spacing (inches):</span>
@@ -146,6 +146,31 @@
             </div>
           </div>
         </div>
+        <div class="accordion" id="accordionGravel">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGravel" aria-expanded="true" aria-controls="collapseGravel">
+                Gravel Settings
+              </button>
+            </h2>
+            <div id="collapseGravel" class="accordion-collapse collapse" data-bs-parent="#accordionGravel">
+              <div class="accordion-body">
+                <div class="stat-item">
+                  <span class="stat-label">Gravel Depth (inches):</span>
+                  <input
+                    v-model.number="gravelDepth"
+                    type="number"
+                    min="4"
+                    max="12"
+                    step="1"
+                    placeholder="e.g., 6"
+                    class="input-field"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="materials-container">
@@ -183,9 +208,11 @@
                   ? concreteBagsNeeded
                   : material.type === 'rebar'
                     ? rebarCalculation.poles
-                    : material.type === 'wood'
-                      ? woodCalculation.boards
-                      : 0
+                    : material.type === 'gravel'
+                      ? gravelCalculation.tons
+                      : material.type === 'wood'
+                        ? woodCalculation.boards
+                        : 0
               }}
             </div>
           </div>
@@ -334,6 +361,24 @@ const woodCalculation = computed(() => {
   };
 });
 
+// Gravel
+const gravelDepth = ref(6);
+
+const gravelCalculation = computed(() => {
+  const area = foundationArea.value; // sq ft
+  const depthFeet = gravelDepth.value / 12;
+
+  const volumeCubicFeet = area * depthFeet;
+  const cubicFeetPerTon = 18; // average for compacted gravel
+
+  const tonsNeeded = Math.ceil(volumeCubicFeet / cubicFeetPerTon);
+
+  return {
+    volume: volumeCubicFeet.toFixed(1),
+    tons: tonsNeeded
+  };
+});
+
 const materialSpecs = computed(() => ({
   foundation: [
     {
@@ -352,6 +397,11 @@ const materialSpecs = computed(() => ({
       name: 'wood',
       query: `${woodSize.value} pressure treated lumber ${woodLength.value}ft`,
       quantity: woodCalculation.value.boards,
+    },
+    {
+      name: 'gravel',
+      query: `drainage gravel bulk bag ton`,
+      quantity: gravelCalculation.value.tons
     }
   ],
   // add 'drywall', 'roofing', etc. here in the future
@@ -495,5 +545,8 @@ const hideTooltip = () => {
 };
 
 onMounted(fetchAllMaterials);
-watch([rebarSize, poleLength, concreteBagWeight, woodSize, woodLength], fetchAllMaterials);
+watch(
+  [rebarSize, poleLength, concreteBagWeight, woodSize, woodLength, gravelDepth],
+  fetchAllMaterials
+);
 </script>

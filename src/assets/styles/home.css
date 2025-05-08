@@ -47,7 +47,7 @@
 
 .config-container {
   flex-grow: 1;
-  padding-bottom: 20px;
+  padding-bottom: 10px;
   padding-right: 5px;
   overflow: auto;
   scrollbar-gutter: stable;
