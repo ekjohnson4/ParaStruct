@@ -209,7 +209,7 @@
                   : material.type === 'rebar'
                     ? rebarCalculation.poles
                     : material.type === 'gravel'
-                      ? gravelCalculation.tons
+                      ? gravelCalculation.volumeCubicFeet
                       : material.type === 'wood'
                         ? woodCalculation.boards
                         : 0
@@ -365,19 +365,19 @@ const woodCalculation = computed(() => {
 const gravelDepth = ref(6);
 
 const gravelCalculation = computed(() => {
-  const area = foundationArea.value; // sq ft
+  const area = foundationArea.value;
   const depthFeet = gravelDepth.value / 12;
-
-  const volumeCubicFeet = area * depthFeet;
-  const cubicFeetPerTon = 18; // average for compacted gravel
-
-  const tonsNeeded = Math.ceil(volumeCubicFeet / cubicFeetPerTon);
+  const totalCubicFeet = area * depthFeet;
 
   return {
-    volume: volumeCubicFeet.toFixed(1),
-    tons: tonsNeeded
+    volumeCubicFeet: Math.ceil(totalCubicFeet), // round up for safety
   };
 });
+
+const extractVolumeFromTitle = (title) => {
+  const cuFtMatch = title.match(/(\d+(\.\d+)?)\s*cu\.?\s*ft/i);
+  return cuFtMatch ? parseFloat(cuFtMatch[1]) : null;
+};
 
 const materialSpecs = computed(() => ({
   foundation: [
@@ -465,22 +465,37 @@ const filteredMaterials = computed(() => {
 
         return true; // pass through for other materials like concrete
       })
-      .map(m => {
-        const regularPrice = parseFloat(m.price?.replace(/[^0-9.]/g, '') || 'Infinity');
-        const bulkQty = parseInt(m.bulkPricing?.quantity) || Infinity;
-        const bulkPrice = parseFloat(m.bulkPricing?.price?.replace(/[^0-9.]/g, '')) || Infinity;
-        const effectivePrice = spec.quantity >= bulkQty ? bulkPrice : regularPrice;
+    .map(m => {
+      const regularPrice = parseFloat(m.price?.replace(/[^0-9.]/g, '') || 'Infinity');
+      const bulkQty = parseInt(m.bulkPricing?.quantity) || Infinity;
+      const bulkPrice = parseFloat(m.bulkPricing?.price?.replace(/[^0-9.]/g, '')) || Infinity;
+
+      if (spec.name === 'gravel') {
+        const volumePerUnit = extractVolumeFromTitle(m.title) || 0.5; // fallback
+        const quantityNeeded = Math.ceil(gravelCalculation.value.volume / volumePerUnit);
 
         return {
           ...m,
-          type: spec.name,
-          quantity: spec.quantity,
+          type: 'gravel',
+          quantity: quantityNeeded,
           priceNumber: regularPrice,
           bulkPrice,
-          effectivePrice,
-          usesBulk: spec.quantity >= bulkQty
+          effectivePrice: quantityNeeded >= bulkQty ? bulkPrice : regularPrice,
+          usesBulk: quantityNeeded >= bulkQty
         };
-      })
+      }
+
+      return {
+        ...m,
+        type: spec.name,
+        quantity: spec.quantity,
+        priceNumber: regularPrice,
+        bulkPrice,
+        effectivePrice: spec.quantity >= bulkQty ? bulkPrice : regularPrice,
+        usesBulk: spec.quantity >= bulkQty
+      };
+    })
+
       .filter(m => isFinite(m.effectivePrice))
       .sort((a, b) => a.effectivePrice - b.effectivePrice);
 
