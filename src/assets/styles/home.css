@@ -2,6 +2,7 @@
 .navbar {
   z-index: 1001;
   background-color: #111;
+  padding-bottom: 4px !important;
 }
 
 .navbar-header {
@@ -10,7 +11,12 @@
 
 .navbar-brand {
   color: white !important;
-  padding-left: 10px;
+}
+
+.logo {
+  width: 125px;
+  height: auto;
+  padding-bottom: 5px;
 }
 
 .openbtn {

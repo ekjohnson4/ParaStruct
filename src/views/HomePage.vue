@@ -10,7 +10,9 @@
       >
         {{ isOpen ? 'X' : '☰' }}
       </button>
-      <div class="navbar-brand">ParaStruct</div>
+      <div class="navbar-brand">
+        <img class="logo" src="../assets/ParaStruct_Logo.webp">
+      </div>
     </div>
   </div>
 </nav>
