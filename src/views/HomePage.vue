@@ -1,21 +1,35 @@
 <template>
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button
-        class="openbtn"
-        :style="{ left: openBtnPosition }"
-        @click.stop="toggleNav"
-        @pointerdown.stop
-      >
-        {{ isOpen ? 'X' : '☰' }}
-      </button>
-      <div class="navbar-brand">
-        <img class="logo" src="../assets/ParaStruct_Logo.webp">
+  <header class="navbar navbar-default">
+    <nav class="container-fluid d-flex align-items-center justify-content-between">
+      <div class="navbar-header d-flex align-items-center">
+        <button
+          class="openbtn"
+          @click.stop="toggleNav"
+          @pointerdown.stop
+        >
+          <font-awesome-icon
+            icon="bars"
+            class="icon-transition"
+            :class="{ 'icon-hidden': isOpen }"
+          />
+          <font-awesome-icon
+            icon="times"
+            class="icon-transition"
+            :class="{ 'icon-hidden': !isOpen }"
+          />
+        </button>
+        <div class="navbar-brand">
+          <img class="logo" src="../assets/ParaStruct_Logo_Text.webp" />
+        </div>
       </div>
-    </div>
-  </div>
-</nav>
+
+      <div class="settings-btn ms-auto">
+        <button type="button" class="btn btn-outline-light">
+          <font-awesome-icon icon="cog"/>
+        </button>
+      </div>
+    </nav>
+  </header>
   <div
     id="mySidebar"
     class="sidebar"
@@ -261,7 +275,6 @@ import HomePageMain from '../components/Home/HomePageMain.vue'
 
 const isOpen = ref(true)
 const sidebarWidth = computed(() => isOpen.value ? '250px' : '0px')
-const openBtnPosition = computed(() => isOpen.value ? '250px' : '0px')
 const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
 const loadingMaterials = ref(false);
 

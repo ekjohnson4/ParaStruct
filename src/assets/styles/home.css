@@ -13,19 +13,39 @@
   color: white !important;
 }
 
+.settings-btn {
+  position: relative;
+  padding-bottom: 3px;
+}
+
 .logo {
   width: 125px;
   height: auto;
-  padding-bottom: 5px;
+  padding-bottom: 2px;
 }
 
 .openbtn {
+  position: relative; /* NEW */
   font-size: 24px;
   background-color: #111;
   color: white;
   border: none;
   width: 34px;
   height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-transition {
+  position: absolute;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.icon-hidden {
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
 }
 
 /* The sidebar menu */
