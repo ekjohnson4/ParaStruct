@@ -552,13 +552,21 @@ const filteredMaterials = computed(() => {
 const fetchAllMaterials = async () => {
   loadingMaterials.value = true;
   try {
+    const urls = materialSpecs.value.foundation.map(material => {
+      return `https://www.homedepot.com/s/${encodeURIComponent(material.query)}?NCNI-5`;
+    });
+
+    const apiURL = `http://localhost:3001/api/materials?${urls.map(u => `urls=${encodeURIComponent(u)}`).join('&')}`;
+    const res = await fetch(apiURL);
+    const data = await res.json();
+
+    // Map materials back to their types by query
     const fetched = {};
-    for (const material of materialSpecs.value.foundation) {
-      const url = `https://www.homedepot.com/s/${encodeURIComponent(material.query)}?NCNI-5`;
-      const res = await fetch(`http://localhost:3001/api/materials?url=${encodeURIComponent(url)}`);
-      const data = await res.json();
-      fetched[material.name] = data;
-    }
+    materialSpecs.value.foundation.forEach((spec, i) => {
+      const url = urls[i];
+      fetched[spec.name] = data[url] || [];
+    });
+
     allMaterials.value = fetched;
   } catch (err) {
     console.error('Failed to fetch materials:', err);
