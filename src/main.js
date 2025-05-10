@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
+import router from './router'
 import './assets/styles/home.css'
 import './assets/styles/main.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -12,4 +13,5 @@ library.add(faBars, faTimes, faCog)
 
 const app = createApp(App)
 app.component('font-awesome-icon', FontAwesomeIcon)
+app.use(router)
 app.mount('#app')

@@ -18,15 +18,15 @@
             :class="{ 'icon-hidden': !isOpen }"
           />
         </button>
-        <div class="navbar-brand">
+        <router-link to="/" class="navbar-brand">
           <img class="logo" src="../assets/ParaStruct_Logo_Text.webp" />
-        </div>
+        </router-link>
       </div>
 
       <div class="settings-btn ms-auto">
-        <button type="button" class="btn btn-outline-light">
+        <router-link to="/settings" class="btn btn-outline-light no-border">
           <font-awesome-icon icon="cog"/>
-        </button>
+        </router-link>
       </div>
     </nav>
   </header>

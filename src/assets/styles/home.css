@@ -18,6 +18,11 @@
   padding-bottom: 3px;
 }
 
+.no-border {
+  border: none !important;
+  box-shadow: none !important;
+}
+
 .logo {
   width: 125px;
   height: auto;
