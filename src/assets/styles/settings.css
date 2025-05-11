@@ -1,0 +1,41 @@
+.settings-container {
+  padding: 30px 18px 18px;
+}
+
+.settings-section {
+  margin: auto;
+  max-width: 600px;
+}
+
+.settings-title {
+  display: flex;
+}
+
+.settings-body {
+  margin-bottom: 22px;
+  border-radius: 8px;
+  border: 1px #d5d9d9 solid;
+}
+
+.settings-body-content {
+  margin: 0;
+  padding: 0;
+}
+
+.settings-list-item {
+  list-style: none;
+  word-wrap: break-word;
+  border-bottom: 1px solid #e7e7e7;
+  padding: 14px 18px !important;
+  width: 100%;
+}
+
+.settings-list-item:last-child {
+  border-bottom: none;
+}
+
+.settings-item-title {
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+}

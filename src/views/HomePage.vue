@@ -19,7 +19,7 @@
           />
         </button>
         <router-link to="/" class="navbar-brand">
-          <img class="logo" src="../assets/ParaStruct_Logo_Text.webp" />
+          <img class="logo" src="../assets/ParaStructBeta_Logo_Text.webp" />
         </router-link>
       </div>
 
@@ -30,6 +30,7 @@
       </div>
     </nav>
   </header>
+
   <div
     id="mySidebar"
     class="sidebar"
