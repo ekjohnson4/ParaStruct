@@ -38,7 +38,7 @@
     @pointerdown.stop
     @click.stop
   >
-    <div class="sidebar-content">
+    <div class="sidebar-body">
       <div class="config-container">
         <div class="config-item">
           <span class="config-label">SqFt per Block:</span>
@@ -65,8 +65,17 @@
           <div class="accordion-item">
             <h2 class="accordion-header">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConcrete" aria-expanded="true" aria-controls="collapseConcrete">
-                Concrete Settings
+                <div class="accordion-text-group">
+                  <div class="accordion-header-text">Concrete Settings</div>
+                  <div class="accordion-header-subtext">{{ concreteBagWeight }} lb bags</div>
+                </div>
               </button>
+              <!-- <input
+                class="form-check-input me-2"
+                type="checkbox"
+                v-model="materialToggles.concrete"
+                id="toggleConcrete"
+              /> -->
             </h2>
             <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionConcrete">
               <div class="accordion-body">
@@ -86,13 +95,16 @@
           <div class="accordion-item">
             <h2 class="accordion-header">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRebar" aria-expanded="true" aria-controls="collapseRebar">
-                Rebar Settings
+                <div class="accordion-text-group">
+                  <div class="accordion-header-text">Rebar Settings</div>
+                  <div class="accordion-header-subtext">{{ poleLength }} ft. {{rebarSize}}</div>
+                </div>
               </button>
             </h2>
             <div id="collapseRebar" class="accordion-collapse collapse" data-bs-parent="#accordionRebar">
               <div class="accordion-body">
                 <div class="config-item">
-                  <span class="config-label">Rebar Spacing (inches):</span>
+                  <span class="config-label">Spacing (inches):</span>
                   <input
                     v-model.number="rebarSpacing"
                     type="number"
@@ -104,7 +116,7 @@
                   >
                 </div>
                 <div class="config-item">
-                  <span class="config-label">Rebar Length (feet):</span>
+                  <span class="config-label">Length (feet):</span>
                   <input
                     v-model.number="poleLength"
                     type="number"
@@ -116,7 +128,7 @@
                   >
                 </div>
                 <div class="config-item">
-                  <span class="config-label">Rebar Size:</span>
+                  <span class="config-label">Size:</span>
                   <select v-model="rebarSize" class="input-field">
                     <option value="#3">#3 (3/8")</option>
                     <option value="#4">#4 (1/2")</option>
@@ -133,13 +145,16 @@
           <div class="accordion-item">
             <h2 class="accordion-header">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWood" aria-expanded="true" aria-controls="collapseWood">
-                Wood Settings
+                <div class="accordion-text-group">
+                  <div class="accordion-header-text">Wood Settings</div>
+                  <div class="accordion-header-subtext">{{woodSize[0]}}"x{{woodSize[2]}}"x{{woodLength}}''</div>
+                </div>
               </button>
             </h2>
             <div id="collapseWood" class="accordion-collapse collapse" data-bs-parent="#accordionWood">
               <div class="accordion-body">
                 <div class="config-item">
-                  <span class="config-label">Wood Size:</span>
+                  <span class="config-label">Size:</span>
                   <select v-model="woodSize" class="input-field">
                     <option value="2x4">2x4</option>
                     <option value="2x6">2x6</option>
@@ -147,7 +162,7 @@
                   </select>
                 </div>
                 <div class="config-item">
-                  <span class="config-label">Wood Length (ft):</span>
+                  <span class="config-label">Length (ft):</span>
                   <input
                     v-model.number="woodLength"
                     type="number"
@@ -166,13 +181,16 @@
           <div class="accordion-item">
             <h2 class="accordion-header">
               <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGravel" aria-expanded="true" aria-controls="collapseGravel">
-                Gravel Settings
+                <div class="accordion-text-group">
+                  <div class="accordion-header-text">Gravel Settings</div>
+                  <div class="accordion-header-subtext">{{gravelDepth}} in. deep</div>
+                </div>
               </button>
             </h2>
             <div id="collapseGravel" class="accordion-collapse collapse" data-bs-parent="#accordionGravel">
               <div class="accordion-body">
                 <div class="config-item">
-                  <span class="config-label">Gravel Depth (inches):</span>
+                  <span class="config-label">Depth (inches):</span>
                   <input
                     v-model.number="gravelDepth"
                     type="number"
@@ -284,6 +302,13 @@ const blockSqFt = ref(4)
 const foundationThickness = ref(8) // default 8 inches
 
 const allMaterials = ref({});
+const materialToggles = ref({
+  concrete: true,
+  rebar: true,
+  wood: true,
+  gravel: true,
+  sealer: true
+});
 
 // Rebar
 const rebarSpacing = ref(12);
@@ -406,38 +431,52 @@ const concreteSealerCalculation = computed(() => {
   }
 })
 
-const materialSpecs = computed(() => ({
-  foundation: [
-    {
+const materialSpecs = computed(() => {
+  const all = [];
+
+  if (materialToggles.value.rebar) {
+    all.push({
       name: 'rebar',
       query: `rebar ${rebarSize.value} ${poleLength.value}ft`,
       quantity: rebarCalculation.value.poles,
       sizeAliases: sizeMap[rebarSize.value] || []
-    },
-    {
+    });
+  }
+
+  if (materialToggles.value.concrete) {
+    all.push({
       name: 'concrete',
       query: `high strength concrete mix ${concreteBagWeight.value} lb`,
-      quantity: concreteBagsNeeded.value,
-      sizeAliases: []
-    },
-    {
+      quantity: concreteBagsNeeded.value
+    });
+  }
+
+  if (materialToggles.value.wood) {
+    all.push({
       name: 'wood',
       query: `${woodSize.value} pressure treated lumber ${woodLength.value}ft`,
-      quantity: woodCalculation.value.boards,
-    },
-    {
+      quantity: woodCalculation.value.boards
+    });
+  }
+
+  if (materialToggles.value.gravel) {
+    all.push({
       name: 'gravel',
       query: `drainage gravel bulk bag ton`,
       quantity: gravelCalculation.value.tons
-    },
-    {
+    });
+  }
+
+  if (materialToggles.value.sealer) {
+    all.push({
       name: 'sealer',
       query: 'water sealers concrete sealer clear',
       quantity: concreteSealerCalculation.value.gallons
-    }
-  ],
-  // add 'drywall', 'roofing', etc. here in the future
-}));
+    });
+  }
+
+  return { foundation: all };
+});
 
 const getMaterialImage = (type) => {
   switch (type) {
@@ -626,7 +665,7 @@ const hideTooltip = () => {
 
 onMounted(fetchAllMaterials);
 watch(
-  [rebarSize, poleLength, concreteBagWeight, woodSize, woodLength, gravelDepth],
+  [rebarSize, poleLength, concreteBagWeight, woodSize, woodLength, gravelDepth, materialToggles],
   fetchAllMaterials
 );
 </script>

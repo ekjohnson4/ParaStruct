@@ -68,7 +68,7 @@
   scrollbar-width: none;
 }
 
-.sidebar-content {
+.sidebar-body {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -86,6 +86,21 @@
 
 .accordion{
   padding-bottom: 10px;
+}
+
+.accordion-header-text {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.accordion-header-subtext {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 0.8rem;
+  font-weight: 400;
+  font-weight: bold;
 }
 
 .accordion-body {
