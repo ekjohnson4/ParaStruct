@@ -40,9 +40,8 @@
   >
     <div class="sidebar-content">
       <div class="config-container">
-        <h4>Config</h4>
-        <div class="stat-item">
-          <span class="stat-label">SqFt per Block:</span>
+        <div class="config-item">
+          <span class="config-label">SqFt per Block:</span>
           <input
             v-model.number="blockSqFt"
             type="number"
@@ -51,8 +50,8 @@
             class="input-field"
           >
         </div>
-        <div class="stat-item">
-          <span class="stat-label">Thickness (inches):</span>
+        <div class="config-item">
+          <span class="config-label">Thickness (inches):</span>
           <input
             v-model.number="foundationThickness"
             type="number"
@@ -71,8 +70,8 @@
             </h2>
             <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionConcrete">
               <div class="accordion-body">
-                <div class="stat-item">
-                  <span class="stat-label">Bag Weight (lbs):</span>
+                <div class="config-item">
+                  <span class="config-label">Bag Weight (lbs):</span>
                   <select v-model.number="concreteBagWeight" class="input-field">
                     <option :value="50">50 lbs</option>
                     <option :value="60">60 lbs</option>
@@ -92,8 +91,8 @@
             </h2>
             <div id="collapseRebar" class="accordion-collapse collapse" data-bs-parent="#accordionRebar">
               <div class="accordion-body">
-                <div class="stat-item">
-                  <span class="stat-label">Rebar Spacing (inches):</span>
+                <div class="config-item">
+                  <span class="config-label">Rebar Spacing (inches):</span>
                   <input
                     v-model.number="rebarSpacing"
                     type="number"
@@ -104,8 +103,8 @@
                     class="input-field"
                   >
                 </div>
-                <div class="stat-item">
-                  <span class="stat-label">Rebar Length (feet):</span>
+                <div class="config-item">
+                  <span class="config-label">Rebar Length (feet):</span>
                   <input
                     v-model.number="poleLength"
                     type="number"
@@ -116,8 +115,8 @@
                     class="input-field"
                   >
                 </div>
-                <div class="stat-item">
-                  <span class="stat-label">Rebar Size:</span>
+                <div class="config-item">
+                  <span class="config-label">Rebar Size:</span>
                   <select v-model="rebarSize" class="input-field">
                     <option value="#3">#3 (3/8")</option>
                     <option value="#4">#4 (1/2")</option>
@@ -139,16 +138,16 @@
             </h2>
             <div id="collapseWood" class="accordion-collapse collapse" data-bs-parent="#accordionWood">
               <div class="accordion-body">
-                <div class="stat-item">
-                  <span class="stat-label">Wood Size:</span>
+                <div class="config-item">
+                  <span class="config-label">Wood Size:</span>
                   <select v-model="woodSize" class="input-field">
                     <option value="2x4">2x4</option>
                     <option value="2x6">2x6</option>
                     <option value="2x8">2x8</option>
                   </select>
                 </div>
-                <div class="stat-item">
-                  <span class="stat-label">Wood Length (ft):</span>
+                <div class="config-item">
+                  <span class="config-label">Wood Length (ft):</span>
                   <input
                     v-model.number="woodLength"
                     type="number"
@@ -172,8 +171,8 @@
             </h2>
             <div id="collapseGravel" class="accordion-collapse collapse" data-bs-parent="#accordionGravel">
               <div class="accordion-body">
-                <div class="stat-item">
-                  <span class="stat-label">Gravel Depth (inches):</span>
+                <div class="config-item">
+                  <span class="config-label">Gravel Depth (inches):</span>
                   <input
                     v-model.number="gravelDepth"
                     type="number"
@@ -239,13 +238,13 @@
       </div>
 
       <div class="stats-container">
-        <div class="stat-item">
-          <span class="stat-label">Area:</span>
-          <span class="stat-value">{{ foundationArea }} sq ft</span>
+        <div class="config-item">
+          <span class="config-label">Area:</span>
+          <span class="config-value">{{ foundationArea }} sq ft</span>
         </div>
-        <div class="stat-item">
-          <span class="stat-label">Estimated cost:</span>
-          <span class="stat-value">${{ estimatedCost }}</span>
+        <div class="config-item">
+          <span class="config-label">Estimated cost:</span>
+          <span class="config-value">${{ estimatedCost }}</span>
         </div>
       </div>
     </div>
@@ -275,8 +274,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
 
 const isOpen = ref(true)
-const sidebarWidth = computed(() => isOpen.value ? '250px' : '0px')
-const mainMargin = computed(() => isOpen.value ? '250px' : '0px')
+const sidebarWidth = computed(() => isOpen.value ? '240px' : '0px')
+const mainMargin = computed(() => isOpen.value ? '240px' : '0px')
 const loadingMaterials = ref(false);
 
 const placedBlocks = ref(new Set());
