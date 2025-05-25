@@ -59,13 +59,17 @@
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 1;
   top: 0;
   left: 0;
   background-color: #111;
   overflow-x: hidden;
   transition: 0.5s;
   scrollbar-width: none;
+}
+
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
 }
 
 .sidebar-body {
@@ -107,6 +111,12 @@
   padding: 10px !important;
 }
 
+.stats-container {
+  margin-top: auto;
+  border-top: 1px solid #333;
+  height: 10%;
+}
+
 .config-item {
   margin: 10px 0;
   display: flex;
@@ -134,13 +144,31 @@
   font-weight: bold;
 }
 
+.materials-button {
+  margin-top: 10px;
+}
+
+/* The materials sidebar menu */
+.materials-sidebar {
+  z-index: 999;
+  height: 100%;
+  width: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  scrollbar-width: none;
+}
+
 .materials-container {
   margin-top: auto;
-  padding-top: 20px;
   padding-bottom: 20px;
-  border-top: 1px solid #333;
+  margin-top: 55px;
+  margin-left: 240px;
   color: black;
-  height: 40%;
+  height: calc(100% - 55px;);
 }
 
 .materials-wrapper {
@@ -198,19 +226,8 @@
   font-size: 11px
 }
 
-.stats-container {
-  margin-top: auto;
-  border-top: 1px solid #333;
-  height: 10%;
-}
-
 #main {
   transition: margin-left .5s;
-}
-
-@media screen and (max-height: 450px) {
-  .sidebar {padding-top: 15px;}
-  .sidebar a {font-size: 18px;}
 }
 
 #three-container {

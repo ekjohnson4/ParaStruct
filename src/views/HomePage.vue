@@ -207,6 +207,38 @@
         </div>
       </div>
 
+      <div class="stats-container">
+        <div class="config-item">
+          <span class="config-label">Area:</span>
+          <span class="config-value">{{ foundationArea }} sq ft</span>
+        </div>
+        <div class="config-item">
+          <span class="config-label">Estimated cost:</span>
+          <span class="config-value">${{ estimatedCost }}</span>
+        </div>
+      </div>
+      <button
+        @click.stop="toggleMaterialsSidebar"
+        @pointerdown.stop
+        class="btn btn-primary materials-button d-flex justify-content-center align-items-center gap-2"
+      >
+        <font-awesome-icon
+          icon="cart-shopping"
+        />
+        <span v-if="isMaterialsOpen">Close Materials</span>
+        <span v-else>Materials</span>
+      </button>
+    </div>
+  </div>
+
+
+  <div
+    id="myMaterialsSidebar"
+    class="materials-sidebar"
+    :style="{ width: materialsSidebarWidth }"
+    @pointerdown.stop
+    @click.stop
+  >
       <div class="materials-container">
         <div class="materials-wrapper">
           <div v-if="loadingMaterials" class="spinner"></div>
@@ -254,18 +286,6 @@
           </div>
         </div>
       </div>
-
-      <div class="stats-container">
-        <div class="config-item">
-          <span class="config-label">Area:</span>
-          <span class="config-value">{{ foundationArea }} sq ft</span>
-        </div>
-        <div class="config-item">
-          <span class="config-label">Estimated cost:</span>
-          <span class="config-value">${{ estimatedCost }}</span>
-        </div>
-      </div>
-    </div>
   </div>
 
   <div id="main" :style="{ marginLeft: mainMargin }">
@@ -292,7 +312,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
 
 const isOpen = ref(true)
+const isMaterialsOpen = ref(false)
 const sidebarWidth = computed(() => isOpen.value ? '240px' : '0px')
+const materialsSidebarWidth = computed(() => isMaterialsOpen.value ? '480px' : '0px')
 const mainMargin = computed(() => isOpen.value ? '240px' : '0px')
 const loadingMaterials = ref(false);
 
@@ -636,6 +658,13 @@ const estimatedCost = computed(() => {
 
 const toggleNav = () => {
   isOpen.value = !isOpen.value
+  if (isMaterialsOpen.value) {
+    isMaterialsOpen.value = !isMaterialsOpen.value;
+  }
+}
+
+const toggleMaterialsSidebar = () => {
+  isMaterialsOpen.value = !isMaterialsOpen.value
 }
 
 const addBlock = (x, z) => {
