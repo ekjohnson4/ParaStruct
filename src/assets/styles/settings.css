@@ -39,3 +39,17 @@
   font-weight: 700;
   display: flex;
 }
+
+.item-price-container {
+  display: flex;
+}
+
+.item-price-field {
+  width: 125px !important;
+}
+
+.item-price-text {
+  display: flex;
+  width: 85px;
+  padding-left: 10px;
+}

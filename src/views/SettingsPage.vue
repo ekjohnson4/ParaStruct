@@ -24,14 +24,21 @@
             v-for="item in localPrices"
             :key="item.id"
             class="settings-list-item"
-            :id="item.id"
           >
-            <div class="row">
+            <div class="row align-items-center">
               <div class="col">
                 <span class="settings-item-title">{{ item.name }}</span>
               </div>
-              <div class="col">
-                {{ item.price }}
+              <div class="col item-price-container align-items-center justify-content-end">
+                <input
+                  v-model.number="item.price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  class="form-control item-price-field"
+                  placeholder="e.g. 1.25"
+                />
+                <span class="unit-label item-price-text justify-content-start">per {{ item.unit }}</span>
               </div>
             </div>
           </li>
@@ -42,11 +49,29 @@
 </template>
 
 <script setup>
-const localPrices = [
-  { id: 'REBAR', name: 'Rebar', price: '$1.00 per ft.' },
-  { id: 'CONCRETE', name: 'Concrete', price: '$0.72 per pound' },
-  { id: 'WOOD', name: 'Wood', price: '$0.92 per ft.' },
-  { id: 'GRAVEL', name: 'Gravel', price: '$1.02 per cu. ft.' },
-  { id: 'SEALER', name: 'Sealer', price: '$15.00 per gallon' }
-];
+import { reactive, onMounted, watch } from 'vue'
+
+const localPrices = reactive([
+  { id: 'REBAR', name: 'Rebar', price: null, unit: 'ft' },
+  { id: 'CONCRETE', name: 'Concrete', price: null, unit: 'pound' },
+  { id: 'WOOD', name: 'Wood', price: null, unit: 'ft' },
+  { id: 'GRAVEL', name: 'Gravel', price: null, unit: 'cu. ft.' },
+  { id: 'SEALER', name: 'Sealer', price: null, unit: 'gallon' }
+]);
+
+onMounted(() => {
+  const stored = localStorage.getItem('localPrices');
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    parsed.forEach((saved, i) => {
+      if (localPrices[i]) {
+        localPrices[i].price = saved.price;
+      }
+    });
+  }
+});
+
+watch(localPrices, (newPrices) => {
+  localStorage.setItem('localPrices', JSON.stringify(newPrices));
+}, { deep: true });
 </script>

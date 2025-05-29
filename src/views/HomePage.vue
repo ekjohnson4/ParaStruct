@@ -332,6 +332,8 @@ const materialToggles = ref({
   sealer: true
 });
 
+const localPrices = ref({});
+
 // Rebar
 const rebarSpacing = ref(12);
 const poleLength = ref(10);
@@ -693,6 +695,19 @@ const hideTooltip = () => {
 };
 
 onMounted(fetchAllMaterials);
+
+onMounted(() => {
+  const stored = localStorage.getItem('localPrices');
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    parsed.forEach(item => {
+      if (item.price != null) {
+        localPrices.value[item.id.toLowerCase()] = parseFloat(item.price);
+      }
+    });
+  }
+});
+
 watch(
   [rebarSize, poleLength, concreteBagWeight, woodSize, woodLength, gravelDepth, materialToggles],
   fetchAllMaterials
