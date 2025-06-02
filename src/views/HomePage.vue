@@ -257,9 +257,9 @@
               <strong>{{ material.title }}</strong>
             </a>
             <div class="item-price">
-              {{ material.usesBulk ? material.bulkPricing.price : material.price }}
+              {{ material.displayPrice }}
               <span
-                v-if="material.bulkPricing && !material.usesBulk"
+                v-if="material.bulkPricing && !material.usesBulk && !material.isLocal"
                 class="tooltip-hint"
                 @mouseenter="showTooltip($event, material)"
                 @mouseleave="hideTooltip"
@@ -267,6 +267,7 @@
                 ⓘ
               </span>
               <span v-if="material.usesBulk" class="bulk">bulk</span>
+              <span v-if="material.isLocal" class="local">(local)</span>
             </div>
             <div class="item-qty">
               x{{
@@ -573,26 +574,51 @@ const filteredMaterials = computed(() => {
         const volumePerUnit = extractVolumeFromTitle(m.title) || 0.5; // fallback
         const quantityNeeded = Math.ceil(gravelCalculation.value.volumeCubicFeet / volumePerUnit);
 
+        const localPrice = parseFloat(localPrices.value[spec.name]);
+        const isUsingLocal = !isNaN(localPrice);
+
+        const effectivePrice = isUsingLocal
+          ? localOverride
+          : (quantityNeeded >= bulkQty ? bulkPrice : regularPrice);
+
+        const displayPrice = isUsingLocal
+          ? `$${localOverride.toFixed(2)}`
+          : (quantityNeeded >= bulkQty ? m.bulkPricing?.price : m.price);
+
         return {
           ...m,
           type: 'gravel',
           quantity: quantityNeeded,
           priceNumber: regularPrice,
           bulkPrice,
-          effectivePrice: quantityNeeded >= bulkQty ? bulkPrice : regularPrice,
-          usesBulk: quantityNeeded >= bulkQty
+          effectivePrice,
+          displayPrice,
+          usesBulk: !isUsingLocal && quantityNeeded >= bulkQty,
+          isLocal: isUsingLocal,
+          link: isUsingLocal ? null : m.link
         };
       }
 
       if (spec.name === 'sealer') {
-        const titleLower = m.title.toLowerCase()
+        const titleLower = m.title.toLowerCase();
 
-        let unitGallons = 1 // default to 1 gallon
-        if (titleLower.includes('5 gallon')) unitGallons = 5
-        else if (titleLower.includes('1 gallon')) unitGallons = 1
-        else if (titleLower.includes('quart')) unitGallons = 0.25
+        let unitGallons = 1;
+        if (titleLower.includes('5 gallon')) unitGallons = 5;
+        else if (titleLower.includes('1 gallon')) unitGallons = 1;
+        else if (titleLower.includes('quart')) unitGallons = 0.25;
 
-        const quantityNeeded = Math.ceil(spec.quantity / unitGallons)
+        const quantityNeeded = Math.ceil(spec.quantity / unitGallons);
+
+        const localOverride = localPrices.value.sealer;
+        const isUsingLocal = localOverride != null;
+
+        const effectivePrice = isUsingLocal
+          ? localOverride
+          : (quantityNeeded >= bulkQty ? bulkPrice : regularPrice);
+
+        const displayPrice = isUsingLocal
+          ? `$${localOverride.toFixed(2)}`
+          : (quantityNeeded >= bulkQty ? m.bulkPricing?.price : m.price);
 
         return {
           ...m,
@@ -600,10 +626,24 @@ const filteredMaterials = computed(() => {
           quantity: quantityNeeded,
           priceNumber: regularPrice,
           bulkPrice,
-          effectivePrice: quantityNeeded >= bulkQty ? bulkPrice : regularPrice,
-          usesBulk: quantityNeeded >= bulkQty
-        }
+          effectivePrice,
+          displayPrice,
+          usesBulk: !isUsingLocal && quantityNeeded >= bulkQty,
+          isLocal: isUsingLocal,
+          link: isUsingLocal ? null : m.link
+        };
       }
+
+      const localOverride = localPrices.value[spec.name];
+      const isUsingLocal = localOverride != null;
+
+      const effectivePrice = isUsingLocal
+        ? localOverride
+        : (spec.quantity >= bulkQty ? bulkPrice : regularPrice);
+
+      const displayPrice = isUsingLocal
+        ? `$${localOverride.toFixed(2)}`
+        : (spec.quantity >= bulkQty ? m.bulkPricing?.price : m.price);
 
       return {
         ...m,
@@ -611,13 +651,17 @@ const filteredMaterials = computed(() => {
         quantity: spec.quantity,
         priceNumber: regularPrice,
         bulkPrice,
-        effectivePrice: spec.quantity >= bulkQty ? bulkPrice : regularPrice,
-        usesBulk: spec.quantity >= bulkQty
+        effectivePrice,
+        displayPrice,
+        usesBulk: !isUsingLocal && spec.quantity >= bulkQty,
+        isLocal: isUsingLocal,
+        title: isUsingLocal ? getLocalTitle(spec.name, spec) : m.title,
+        link: isUsingLocal ? null : m.link
       };
     })
 
-      .filter(m => isFinite(m.effectivePrice))
-      .sort((a, b) => a.effectivePrice - b.effectivePrice);
+    .filter(m => isFinite(m.effectivePrice))
+    .sort((a, b) => a.effectivePrice - b.effectivePrice);
 
     return processed.length ? processed[0] : null;
   });
@@ -679,6 +723,23 @@ const removeBlock = (x, z) => {
   placedBlocks.value.delete(`${x},${z}`);
 };
 
+const getLocalTitle = (type, spec) => {
+  switch (type) {
+    case 'rebar':
+      return `${rebarSize.value} ${poleLength.value} ft. Rebar`;
+    case 'concrete':
+      return `${concreteBagWeight.value} lb Concrete Mix`;
+    case 'wood':
+      return `${woodSize.value} ${woodLength.value} Ft Lumber`;
+    case 'gravel':
+      return `Gravel (${spec.volumePerUnit ?? 0.5} cu. ft. per unit)`;
+    case 'sealer':
+      return `Concrete sealer (${spec.unitSize ?? 1} gal per unit)`;
+    default:
+      return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+};
+
 const tooltipData = ref({ visible: false, x: 0, y: 0, text: '' });
 
 const showTooltip = (event, material) => {
@@ -701,12 +762,16 @@ onMounted(() => {
   if (stored) {
     const parsed = JSON.parse(stored);
     parsed.forEach(item => {
-      if (item.price != null) {
-        localPrices.value[item.id.toLowerCase()] = parseFloat(item.price);
+      const price = parseFloat(item.price);
+      if (!isNaN(price)) {
+        localPrices.value[item.id.toLowerCase()] = price;
+      } else {
+        localPrices.value[item.id.toLowerCase()] = null;
       }
     });
   }
 });
+
 
 watch(
   [rebarSize, poleLength, concreteBagWeight, woodSize, woodLength, gravelDepth, materialToggles],
