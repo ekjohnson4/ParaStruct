@@ -9,10 +9,12 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faBars, faTimes, faCog, faCartShopping } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import { createPinia } from 'pinia'
 
 library.add(faBars, faTimes, faCog, faCartShopping)
 
 const app = createApp(App)
+app.use(createPinia())
 app.component('font-awesome-icon', FontAwesomeIcon)
 app.use(router)
 app.mount('#app')

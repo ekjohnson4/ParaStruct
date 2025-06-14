@@ -49,7 +49,10 @@
 </template>
 
 <script setup>
-import { reactive, onMounted, watch } from 'vue'
+import { reactive, watch, onMounted } from 'vue'
+import { useMaterialsStore } from '../stores/materials'
+
+const store = useMaterialsStore()
 
 const localPrices = reactive([
   { id: 'REBAR', name: 'Rebar', price: null, unit: 'ft' },
@@ -57,21 +60,18 @@ const localPrices = reactive([
   { id: 'WOOD', name: 'Wood', price: null, unit: 'ft' },
   { id: 'GRAVEL', name: 'Gravel', price: null, unit: 'cu. ft.' },
   { id: 'SEALER', name: 'Sealer', price: null, unit: 'gallon' }
-]);
+])
 
+// On mount, populate localPrices from the store
 onMounted(() => {
-  const stored = localStorage.getItem('localPrices');
-  if (stored) {
-    const parsed = JSON.parse(stored);
-    parsed.forEach((saved, i) => {
-      if (localPrices[i]) {
-        localPrices[i].price = saved.price;
-      }
-    });
-  }
-});
+  localPrices.forEach(item => {
+    const storeVal = store.localPrices[item.id.toLowerCase()]
+    item.price = typeof storeVal === 'number' ? storeVal : null
+  })
+})
 
+// Update store whenever localPrices change
 watch(localPrices, (newPrices) => {
-  localStorage.setItem('localPrices', JSON.stringify(newPrices));
-}, { deep: true });
+  store.setLocalPrices(newPrices)
+}, { deep: true })
 </script>

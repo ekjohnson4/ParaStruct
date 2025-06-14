@@ -311,6 +311,9 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
+import { useMaterialsStore } from '../stores/materials'
+
+const store = useMaterialsStore()
 
 const isOpen = ref(true)
 const isMaterialsOpen = ref(false)
@@ -324,7 +327,6 @@ const blockCount = ref(0)
 const blockSqFt = ref(4)
 const foundationThickness = ref(8) // default 8 inches
 
-const allMaterials = ref({});
 const materialToggles = ref({
   concrete: true,
   rebar: true,
@@ -332,8 +334,6 @@ const materialToggles = ref({
   gravel: true,
   sealer: true
 });
-
-const localPrices = ref({});
 
 // Rebar
 const rebarSpacing = ref(12);
@@ -521,7 +521,7 @@ const getMaterialImage = (type) => {
 
 const filteredMaterials = computed(() => {
   const foundationMaterials = materialSpecs.value.foundation.map(spec => {
-    const raw = allMaterials.value[spec.name] || [];
+    const raw = store.allMaterials[spec.name] || [];
 
     const processed = raw
       .filter(m => {
@@ -574,7 +574,7 @@ const filteredMaterials = computed(() => {
         const volumePerUnit = extractVolumeFromTitle(m.title) || 0.5; // fallback
         const quantityNeeded = Math.ceil(gravelCalculation.value.volumeCubicFeet / volumePerUnit);
 
-        const localPrice = parseFloat(localPrices.value[spec.name]);
+        const localPrice = parseFloat(store.localPrices[spec.name]);
         const isUsingLocal = !isNaN(localPrice);
 
         const effectivePrice = isUsingLocal
@@ -609,7 +609,7 @@ const filteredMaterials = computed(() => {
 
         const quantityNeeded = Math.ceil(spec.quantity / unitGallons);
 
-        const localOverride = localPrices.value.sealer;
+        const localOverride = store.localPrices[spec.name];
         const isUsingLocal = localOverride != null;
 
         const effectivePrice = isUsingLocal
@@ -634,7 +634,7 @@ const filteredMaterials = computed(() => {
         };
       }
 
-      const localOverride = localPrices.value[spec.name];
+      const localOverride = store.localPrices[spec.name];
       const isUsingLocal = localOverride != null;
 
       const effectivePrice = isUsingLocal
@@ -687,7 +687,7 @@ const fetchAllMaterials = async () => {
       fetched[spec.name] = data[url] || [];
     });
 
-    allMaterials.value = fetched;
+    store.setAllMaterials(fetched);
   } catch (err) {
     console.error('Failed to fetch materials:', err);
   } finally {
@@ -756,22 +756,6 @@ const hideTooltip = () => {
 };
 
 onMounted(fetchAllMaterials);
-
-onMounted(() => {
-  const stored = localStorage.getItem('localPrices');
-  if (stored) {
-    const parsed = JSON.parse(stored);
-    parsed.forEach(item => {
-      const price = parseFloat(item.price);
-      if (!isNaN(price)) {
-        localPrices.value[item.id.toLowerCase()] = price;
-      } else {
-        localPrices.value[item.id.toLowerCase()] = null;
-      }
-    });
-  }
-});
-
 
 watch(
   [rebarSize, poleLength, concreteBagWeight, woodSize, woodLength, gravelDepth, materialToggles],
