@@ -25,4 +25,9 @@ export const useMaterialsStore = defineStore('materials', () => {
     setAllMaterials,
     setLocalPrices
   }
+}, {
+  persist: {
+    key: 'materials', // localStorage key
+    paths: ['localPrices'] // you can also persist 'allMaterials' if you want
+  }
 })
