@@ -45,6 +45,35 @@
         </ul>
       </div>
     </div>
+
+    <div class="settings-section">
+      <h1 class="settings-title">Learner Mode</h1>
+      <div class="settings-body">
+        <ul class="settings-body-content">
+          <li class="settings-list-item">
+            <div class="row align-items-center">
+              <div class="col">
+                <label class="settings-item-title" for="learnerModeToggle">
+                  {{ store.isExperienced ? 'Experienced User' : 'Learner Mode' }}
+                </label>
+              </div>
+              <div class="col item-price-container align-items-center justify-content-end form-switch">
+                <input
+                  class="form-check-input"
+                  type="checkbox"
+                  id="learnerModeToggle"
+                  v-model="store.isExperienced"
+                />
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <button @click="store.hasCompletedIntro = false" class="btn btn-warning mt-3">
+        Reset Intro (for testing)
+      </button>
+
+    </div>
   </div>
 </template>
 

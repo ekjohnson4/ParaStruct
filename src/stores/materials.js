@@ -4,6 +4,8 @@ import { ref } from 'vue'
 export const useMaterialsStore = defineStore('materials', () => {
   const allMaterials = ref({})
   const localPrices = ref({})
+  const hasCompletedIntro = ref(false)
+  const isExperienced = ref(null)
 
   const setAllMaterials = (data) => {
     allMaterials.value = data
@@ -19,15 +21,23 @@ export const useMaterialsStore = defineStore('materials', () => {
     localPrices.value = updated
   }
 
+  const setIntroAnswer = (experienced) => {
+    isExperienced.value = experienced
+    hasCompletedIntro.value = true
+  }
+
   return {
     allMaterials,
     localPrices,
     setAllMaterials,
-    setLocalPrices
+    setLocalPrices,
+    hasCompletedIntro,
+    isExperienced,
+    setIntroAnswer
   }
 }, {
   persist: {
-    key: 'materials', // localStorage key
-    paths: ['localPrices'] // you can also persist 'allMaterials' if you want
+    key: 'materials',
+    paths: ['localPrices']
   }
 })

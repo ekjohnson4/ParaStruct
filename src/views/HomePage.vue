@@ -231,7 +231,6 @@
     </div>
   </div>
 
-
   <div
     id="myMaterialsSidebar"
     class="materials-sidebar"
