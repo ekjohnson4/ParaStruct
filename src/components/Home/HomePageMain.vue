@@ -1,5 +1,18 @@
 <template>
-  <div id="three-container" ref="threeContainer"></div>
+  <!-- The Three.js container -->
+  <div id="three-container" ref="threeContainer" />
+
+  <!-- The popup overlay -->
+  <div class="popup-overlay">
+    <div
+      v-for="(popup, index) in costPopups"
+      :key="index"
+      class="cost-popup"
+      :style="getPopupStyle(popup)"
+    >
+      +${{ popup.amount.toFixed(2) }}
+    </div>
+  </div>
   <div id="info">
     <strong>click</strong>: add blocks, <strong>click + drag</strong>: draw blocks,
     <strong>shift + click</strong>: remove block, <strong>ctrl + drag (left-click)</strong>: move camera,
@@ -23,6 +36,7 @@ const objects = []
 let isMouseDown = false
 let lastPlacedPosition = new THREE.Vector3()
 const placedKeys = new Set()
+const costPopups = ref([])
 
 const props = defineProps({
   isOpen: Boolean,
@@ -213,6 +227,49 @@ function onPointerMove(event) {
   }
 }
 
+function addCostPopup(x, z, amount, camera, renderer) {
+  // Use the actual world position of the block (including proper Y coordinate)
+  const scaledThickness = props.foundationThickness * Math.sqrt(1 / props.blockSqFt)
+  const worldPosition = new THREE.Vector3(x * 50 + 25, scaledThickness, z * 50 + 25)
+
+  // Project to normalized device coordinates
+  const vector = worldPosition.clone()
+  vector.project(camera)
+
+  // Convert to screen coordinates
+  const rect = renderer.domElement.getBoundingClientRect()
+  const screenX = (vector.x * 0.5 + 0.5) * rect.width
+  const screenY = (-vector.y * 0.5 + 0.5) * rect.height
+
+  costPopups.value.push({
+    x: screenX,
+    y: screenY,
+    amount,
+    opacity: 1,
+    float: 0
+  })
+
+  // Animate the popup
+  const popup = costPopups.value[costPopups.value.length - 1]
+  const interval = setInterval(() => {
+    popup.float += 2
+    popup.opacity -= 0.015
+    if (popup.opacity <= 0) {
+      clearInterval(interval)
+      costPopups.value.splice(costPopups.value.indexOf(popup), 1)
+    }
+  }, 16) // ~60fps
+}
+
+function getPopupStyle(popup) {
+  return {
+    left: `${popup.x}px`,
+    top: `${popup.y - popup.float}px`,
+    transform: 'translate(-50%, -50%)',
+    opacity: popup.opacity,
+  }
+}
+
 function snapToGrid(pos) {
   const adjusted = new THREE.Vector3()
     .copy(pos)
@@ -282,6 +339,8 @@ function placeBlock(position) {
 
     const [x, z] = key.split('_').map(Number)
     emit('block-added', x, z)
+
+    addCostPopup(x, z, 1, camera, renderer)
   }
 }
 
