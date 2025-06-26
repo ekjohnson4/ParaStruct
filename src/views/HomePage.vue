@@ -213,7 +213,7 @@
           <span class="config-value">{{ foundationArea }} sq ft</span>
         </div>
         <div class="config-item">
-          <span class="config-label">Estimated cost:</span>
+          <span class="config-label">Estimated Cost:</span>
           <span class="config-value">${{ estimatedCost }}</span>
         </div>
       </div>
@@ -290,6 +290,7 @@
 
   <div id="main" :style="{ marginLeft: mainMargin }">
     <HomePageMain
+      ref="mainCanvas"
       :isOpen="isOpen"
       :blockSqFt="blockSqFt"
       :foundationThickness="foundationThickness"
@@ -308,7 +309,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
 import { useMaterialsStore } from '../stores/materials'
 
@@ -333,6 +334,8 @@ const materialToggles = ref({
   gravel: true,
   sealer: true
 });
+
+const mainCanvas = ref(null);
 
 // Rebar
 const rebarSpacing = ref(12);
@@ -697,7 +700,8 @@ const fetchAllMaterials = async () => {
 const foundationArea = computed(() => Math.round(blockCount.value * blockSqFt.value))
 const estimatedCost = computed(() => {
   return filteredMaterials.value.reduce((total, material) => {
-    return total + (material.effectivePrice * material.quantity);
+    const updatedTotal = total + (material.effectivePrice * material.quantity);
+    return updatedTotal;
   }, 0).toFixed(2);
 });
 
@@ -713,8 +717,21 @@ const toggleMaterialsSidebar = () => {
 }
 
 const addBlock = (x, z) => {
+  // Store the current estimated cost before adding the block
+  const previousCost = parseFloat(estimatedCost.value);
+
+  // Add the block
   blockCount.value++
   placedBlocks.value.add(`${x},${z}`);
+
+  // Use nextTick to ensure reactive values are updated, then calculate the difference
+  nextTick(() => {
+    const newCost = parseFloat(estimatedCost.value);
+    const costDifference = newCost - previousCost;
+
+    // Pass the calculated difference to the 3D component
+    mainCanvas.value?.addCostPopup(x, z, costDifference);
+  });
 };
 
 const removeBlock = (x, z) => {
@@ -745,7 +762,7 @@ const showTooltip = (event, material) => {
   tooltipData.value = {
     visible: true,
     x: event.clientX,
-    y: event.clientY - 20, // raise it slightly
+    y: event.clientY - 20,
     text: `Bulk price ${material.bulkPricing.price} for ${material.bulkPricing.quantity}+`
   };
 };

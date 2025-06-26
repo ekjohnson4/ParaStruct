@@ -21,7 +21,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, defineProps, defineEmits, watch } from 'vue'
+import { onMounted, ref, defineProps, defineEmits, defineExpose, watch } from 'vue'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import concreteTexture from '@/assets/textures/square-outline-textured.png'
@@ -227,7 +227,7 @@ function onPointerMove(event) {
   }
 }
 
-function addCostPopup(x, z, amount, camera, renderer) {
+function addCostPopup(x, z, amount) {
   // Use the actual world position of the block (including proper Y coordinate)
   const scaledThickness = props.foundationThickness * Math.sqrt(1 / props.blockSqFt)
   const worldPosition = new THREE.Vector3(x * 50 + 25, scaledThickness, z * 50 + 25)
@@ -244,7 +244,7 @@ function addCostPopup(x, z, amount, camera, renderer) {
   costPopups.value.push({
     x: screenX,
     y: screenY,
-    amount,
+    amount: amount, // Use the amount passed from the main component
     opacity: 1,
     float: 0
   })
@@ -339,8 +339,6 @@ function placeBlock(position) {
 
     const [x, z] = key.split('_').map(Number)
     emit('block-added', x, z)
-
-    addCostPopup(x, z, 1, camera, renderer)
   }
 }
 
@@ -372,4 +370,6 @@ function onDocumentKeyUp(event) {
 function render() {
   renderer.render(scene, camera)
 }
+
+defineExpose({ addCostPopup });
 </script>
