@@ -6,7 +6,7 @@
     </video>
 
     <div class="intro-content">
-      <img src="../assets/ParaStructBeta_Logo_Text.webp" />
+      <img class="intro-img" src="../assets/ParaStruct_Logo_New.png" />
       <div class="intro-query">Are you experienced with foundation construction?</div>
       <div class="button-group">
         <button @click="answer(true)" class="btn intro-btn">Yes</button>
@@ -70,5 +70,10 @@ const answer = (experienced) => {
 
 .intro-btn {
   color: white;
+}
+
+.intro-img {
+  width: 750px;
+  height: auto;
 }
 </style>

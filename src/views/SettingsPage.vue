@@ -3,7 +3,7 @@
     <nav class="container-fluid d-flex align-items-center justify-content-between">
       <div class="navbar-header d-flex align-items-center">
         <router-link to="/" class="navbar-brand">
-          <img class="logo" src="../assets/ParaStructBeta_Logo_Text.webp" />
+          <img class="logo" src="../assets/ParaStruct_Logo_New.png" />
         </router-link>
       </div>
 
