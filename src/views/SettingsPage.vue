@@ -3,7 +3,7 @@
     <nav class="container-fluid d-flex align-items-center justify-content-between">
       <div class="navbar-header d-flex align-items-center">
         <router-link to="/" class="navbar-brand">
-          <img class="logo" src="../assets/ParaStruct_Logo_New.png" />
+          <img class="logo" src="../assets/ParaStruct_Logo_New.webp" />
         </router-link>
       </div>
 
@@ -30,6 +30,9 @@
                 <span class="settings-item-title">{{ item.name }}</span>
               </div>
               <div class="col item-price-container align-items-center justify-content-end">
+                <div class="dollar">
+                  $
+                </div>
                 <input
                   v-model.number="item.price"
                   type="number"

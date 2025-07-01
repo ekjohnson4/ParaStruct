@@ -53,3 +53,8 @@
   width: 85px;
   padding-left: 10px;
 }
+
+.dollar {
+  font-weight: bold;
+  padding-right: 5px;
+}

@@ -6,13 +6,15 @@ import './assets/styles/settings.css'
 import './assets/styles/main.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import 'alertifyjs/build/css/alertify.min.css'
+import 'alertifyjs/build/css/themes/default.min.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBars, faTimes, faCog, faCartShopping } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faTimes, faCog, faCartShopping, faInfo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
-library.add(faBars, faTimes, faCog, faCartShopping)
+library.add(faBars, faTimes, faCog, faCartShopping, faInfo)
 
 const app = createApp(App)
 const pinia = createPinia()

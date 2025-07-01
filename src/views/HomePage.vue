@@ -15,7 +15,7 @@
           />
         </button>
         <router-link to="/" class="navbar-brand">
-          <img class="logo" src="../assets/ParaStruct_Logo_New.png" />
+          <img class="logo" src="../assets/ParaStruct_Logo_New.webp" />
         </router-link>
       </div>
       <div class="settings-btn ms-auto">
@@ -284,6 +284,11 @@
   >
     {{ tooltipData.text }}
   </div>
+
+  <!-- Info Button -->
+<button class="info-btn" @click="showInfo">
+  <font-awesome-icon icon="info"/>
+</button>
 </template>
 
 <script setup>
@@ -292,6 +297,12 @@ import HomePageMain from '../components/Home/HomePageMain.vue'
 import { useFoundationCalculations } from '../composables/useFoundationCalculations'
 import { useMaterialProcessing } from '../composables/useMaterialProcessing'
 import { useMaterialsStore } from '../stores/materials'
+import alertify from 'alertifyjs'
+
+alertify.defaults.transition = "slide";
+alertify.defaults.theme.ok = "btn btn-primary";
+alertify.defaults.theme.cancel = "btn btn-danger";
+alertify.defaults.theme.input = "form-control";
 
 // Composables
 const calculations = useFoundationCalculations();
@@ -372,6 +383,20 @@ const fetchAllMaterials = async () => {
   } finally {
     loadingMaterials.value = false
   }
+}
+
+function showInfo() {
+  alertify.alert(
+    'Controls',
+    `
+    <strong>Click</strong>: add blocks<br/>
+    <strong>Click + drag</strong>: draw blocks<br/>
+    <strong>Shift + click</strong>: remove block<br/>
+    <strong>Ctrl + drag (left-click)</strong>: move camera<br/>
+    <strong>Ctrl + drag (right-click)</strong>: rotate camera<br/>
+    <strong>Ctrl + scroll</strong>: zoom
+    `
+  )
 }
 
 const getMaterialImage = (type) => {

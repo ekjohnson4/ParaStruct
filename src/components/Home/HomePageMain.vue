@@ -13,11 +13,6 @@
       +${{ popup.amount.toFixed(2) }}
     </div>
   </div>
-  <div id="info">
-    <strong>click</strong>: add blocks, <strong>click + drag</strong>: draw blocks,
-    <strong>shift + click</strong>: remove block, <strong>ctrl + drag (left-click)</strong>: move camera,
-    <strong>ctrl + drag (right-click)</strong>: rotate camera, <strong>ctrl + scroll</strong>: zoom
-  </div>
 </template>
 
 <script setup>
