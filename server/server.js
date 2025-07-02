@@ -1,14 +1,21 @@
 const express = require('express');
 const cors = require('cors');
 const scrapeMaterials = require('./scraper');
-const app = express();
-const PORT = 3001;
+const path = require('path');
 
-app.use(express.json());
+const app = express();
+const PORT = process.env.PORT || 3001;
+
 app.use(cors({
-  origin: 'http://localhost:8080'
+  origin: '*',
 }));
 
+app.use(express.json());
+
+// Serve static frontend build
+app.use(express.static(path.join(__dirname, 'public')));
+
+// API route
 app.get('/api/materials', async (req, res) => {
   try {
     const urls = Array.isArray(req.query.urls)
@@ -31,6 +38,11 @@ app.get('/api/materials', async (req, res) => {
   }
 });
 
+// Catch-all route to serve Vue app for SPA support
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.listen(PORT, () => {
-  console.log(`✅ Server running at http://localhost:${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
