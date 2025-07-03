@@ -48,6 +48,7 @@
             max="12"
             placeholder="Thickness (6-12 inches)"
             class="input-field"
+            @change="clampThickness"
           >
         </div>
         <div class="accordion" id="accordionConcrete">
@@ -359,6 +360,13 @@ const showTooltip = (event, material) => {
 
 const hideTooltip = () => {
   tooltipData.value.visible = false
+}
+
+function clampThickness() {
+  const val = calculations.foundationThickness.value
+  if (val < 6) calculations.foundationThickness.value = 6
+  if (val > 12) calculations.foundationThickness.value = 12
+  alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
 }
 
 const fetchAllMaterials = async () => {
