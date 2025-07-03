@@ -3,7 +3,7 @@ const path = require('path')
 
 module.exports = defineConfig({
   transpileDependencies: true,
-  outputDir: path.resolve(__dirname, '../client/public'),
+  outputDir: path.resolve(__dirname, './public'),
   assetsDir: 'static',
   publicPath: '/',
 })
