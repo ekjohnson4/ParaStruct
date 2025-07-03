@@ -13,7 +13,7 @@ app.use(cors({
 app.use(express.json());
 
 // Serve static frontend build
-app.use(express.static(path.join(__dirname, '..', 'client', 'dist')));
+app.use(express.static(path.join(__dirname, '..', 'client', 'public')));
 
 // API route
 app.get('/api/materials', async (req, res) => {
@@ -40,7 +40,7 @@ app.get('/api/materials', async (req, res) => {
 
 // Catch-all route to serve Vue app for SPA support
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'dist', 'index.html'));
+  res.sendFile(path.join(__dirname, '..', 'client', 'public', 'index.html'));
 });
 
 app.listen(PORT, () => {
