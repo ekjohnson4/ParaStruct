@@ -368,7 +368,7 @@ const fetchAllMaterials = async () => {
       `https://www.homedepot.com/s/${encodeURIComponent(material.query)}?NCNI-5`
     )
 
-    const apiURL = `http://localhost:3001/api/materials?${urls.map(u => `urls=${encodeURIComponent(u)}`).join('&')}`
+    const apiURL = `/api/materials?${urls.map(u => `urls=${encodeURIComponent(u)}`).join('&')}`
     const response = await fetch(apiURL)
     const data = await response.json()
 
