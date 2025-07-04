@@ -57,7 +57,7 @@
             <div class="row align-items-center">
               <div class="col">
                 <label class="settings-item-title" for="learnerModeToggle">
-                  {{ store.isExperienced ? 'Experienced User' : 'Learner Mode' }}
+                  {{ store.isExperienced ? 'Experienced Mode Active' : 'Learner Mode Active' }}
                 </label>
               </div>
               <div class="col item-price-container align-items-center justify-content-end form-switch">
@@ -87,11 +87,11 @@ import { useMaterialsStore } from '../stores/materials'
 const store = useMaterialsStore()
 
 const localPrices = reactive([
-  { id: 'REBAR', name: 'Rebar', price: null, unit: 'ft' },
-  { id: 'CONCRETE', name: 'Concrete', price: null, unit: 'pound' },
-  { id: 'WOOD', name: 'Wood', price: null, unit: 'ft' },
-  { id: 'GRAVEL', name: 'Gravel', price: null, unit: 'cu. ft.' },
-  { id: 'SEALER', name: 'Sealer', price: null, unit: 'gallon' }
+  { id: 'REBAR', name: 'Rebar', price: null, unit: 'unit' },
+  { id: 'CONCRETE', name: 'Concrete', price: null, unit: 'unit' },
+  { id: 'WOOD', name: 'Wood', price: null, unit: 'unit' },
+  { id: 'GRAVEL', name: 'Gravel', price: null, unit: 'unit' },
+  { id: 'SEALER', name: 'Sealer', price: null, unit: 'unit' }
 ])
 
 // On mount, populate localPrices from the store

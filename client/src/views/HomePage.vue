@@ -366,11 +366,15 @@ function clampThickness() {
   const val = calculations.foundationThickness.value
   if (val < 6) {
     calculations.foundationThickness.value = 6
-    alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
+    if (!store.isExperienced) {
+      alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
+    }
   }
   else if (val > 12) {
     calculations.foundationThickness.value = 12;
-    alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
+    if (!store.isExperienced) {
+      alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
+    }
   }
 }
 
