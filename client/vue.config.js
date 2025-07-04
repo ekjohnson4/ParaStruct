@@ -6,4 +6,12 @@ module.exports = defineConfig({
   outputDir: path.resolve(__dirname, '../server/public'),
   assetsDir: 'static',
   publicPath: '/',
+  devServer: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001', // your local backend
+        changeOrigin: true
+      }
+    }
+  }
 })
