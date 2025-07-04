@@ -44,9 +44,9 @@
           <input
             v-model.number="calculations.foundationThickness.value"
             type="number"
-            min="6"
+            min="4"
             max="12"
-            placeholder="Thickness (6-12 inches)"
+            placeholder="Thickness (4-12 inches)"
             class="input-field"
             @change="clampThickness"
           >
@@ -149,6 +149,8 @@
                     <option value="2x4">2x4</option>
                     <option value="2x6">2x6</option>
                     <option value="2x8">2x8</option>
+                    <option value="2x10">2x10</option>
+                    <option value="2x12">2x12</option>
                   </select>
                 </div>
                 <div class="config-item">
@@ -364,16 +366,16 @@ const hideTooltip = () => {
 
 function clampThickness() {
   const val = calculations.foundationThickness.value
-  if (val < 6) {
-    calculations.foundationThickness.value = 6
+  if (val < 4) {
+    calculations.foundationThickness.value = 4
     if (!store.isExperienced) {
-      alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
+      alertify.warning('A slab is usually between 4 and 12 inches.');
     }
   }
   else if (val > 12) {
     calculations.foundationThickness.value = 12;
     if (!store.isExperienced) {
-      alertify.warning('Foundation thickness is usually between 4 and 12 inches.');
+      alertify.warning('A slab is usually between 4 and 12 inches.');
     }
   }
 }
