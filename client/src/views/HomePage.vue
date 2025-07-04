@@ -343,12 +343,19 @@ const handleBlockAdded = (x, z) => {
   nextTick(() => {
     const newCost = parseFloat(materials.estimatedCost.value)
     const costDifference = newCost - previousCost
-    mainCanvas.value?.addCostPopup(x, z, costDifference)
+    mainCanvas.value?.addCostPopup(x, z, costDifference, "green")
   })
 }
 
 const handleBlockRemoved = (x, z) => {
+  const previousCost = parseFloat(materials.estimatedCost.value)
   calculations.removeBlock(x, z)
+
+  nextTick(() => {
+    const newCost = parseFloat(materials.estimatedCost.value)
+    const costDifference = newCost - previousCost
+    mainCanvas.value?.addCostPopup(x, z, costDifference, "red")
+  })
 }
 
 const showTooltip = (event, material) => {

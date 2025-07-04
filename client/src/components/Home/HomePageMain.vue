@@ -10,7 +10,7 @@
       class="cost-popup"
       :style="getPopupStyle(popup)"
     >
-      +${{ popup.amount.toFixed(2) }}
+      {{ popup.amount >= 0 ? '+' : '-' }}${{ Math.abs(popup.amount).toFixed(2) }}
     </div>
   </div>
 </template>
@@ -222,7 +222,7 @@ function onPointerMove(event) {
   }
 }
 
-function addCostPopup(x, z, amount) {
+function addCostPopup(x, z, amount, color) {
   // Use the actual world position of the block (including proper Y coordinate)
   const scaledThickness = props.foundationThickness * Math.sqrt(1 / props.blockSqFt)
   const worldPosition = new THREE.Vector3(x * 50 + 25, scaledThickness, z * 50 + 25)
@@ -239,9 +239,10 @@ function addCostPopup(x, z, amount) {
   costPopups.value.push({
     x: screenX,
     y: screenY,
-    amount: amount, // Use the amount passed from the main component
+    amount: amount,
     opacity: 1,
-    float: 0
+    float: 0,
+    color: color
   })
 
   // Animate the popup
@@ -262,6 +263,7 @@ function getPopupStyle(popup) {
     top: `${popup.y - popup.float}px`,
     transform: 'translate(-50%, -50%)',
     opacity: popup.opacity,
+    color: popup.color,
   }
 }
 
