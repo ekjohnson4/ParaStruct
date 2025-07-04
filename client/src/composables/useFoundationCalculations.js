@@ -53,7 +53,7 @@ export function useFoundationCalculations() {
   })
 
   // Wood calculations
-  const woodSize = ref('2x4')
+  const woodSize = ref('2x8')
   const woodLength = ref(10)
 
   const woodCalculation = computed(() => {

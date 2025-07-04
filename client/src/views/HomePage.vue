@@ -456,4 +456,60 @@ watch(
   ],
   fetchAllMaterials
 )
+
+// Add this watcher to validate wood size selection
+watch(
+  () => calculations.woodSize.value,
+  (newWoodSize) => {
+    const thickness = calculations.foundationThickness.value
+
+    // Map foundation thickness to appropriate wood sizes
+    const getRecommendedWoodSize = (thickness) => {
+      if (thickness <= 4) return '2x4'
+      if (thickness <= 6) return '2x6'
+      if (thickness <= 8) return '2x8'
+      if (thickness <= 10) return '2x10'
+      if (thickness <= 12) return '2x12'
+      return '2x8' // fallback
+    }
+
+    const recommendedSize = getRecommendedWoodSize(thickness)
+
+    // Check if selected wood size is appropriate
+    if (newWoodSize !== recommendedSize) {
+      const selectedHeight = parseInt(newWoodSize.split('x')[1])
+      const recommendedHeight = parseInt(recommendedSize.split('x')[1])
+
+      if (selectedHeight < thickness) {
+        alertify.warning(`Warning: ${newWoodSize} lumber may be too small for a ${thickness}" foundation. Consider using ${recommendedSize} or larger.`)
+      } else if (selectedHeight >= recommendedHeight + 2) {
+        alertify.warning(`Note: ${newWoodSize} lumber is larger than typically needed for a ${thickness}" foundation. ${recommendedSize} would be sufficient.`)
+      }
+    }
+  }
+)
+
+// Update the existing foundation thickness watcher to prevent triggering the warning
+watch(
+  () => calculations.foundationThickness.value,
+  (newThickness) => {
+    // Map foundation thickness to wood size
+    const getRecommendedWoodSize = (thickness) => {
+      if (thickness <= 4) return '2x4'
+      if (thickness <= 6) return '2x6'
+      if (thickness <= 8) return '2x8'
+      if (thickness <= 10) return '2x10'
+      if (thickness <= 12) return '2x12'
+      return '2x8' // fallback
+    }
+
+    const recommendedSize = getRecommendedWoodSize(newThickness)
+
+    // Only update if different to avoid triggering validation warning
+    if (calculations.woodSize.value !== recommendedSize) {
+      calculations.woodSize.value = recommendedSize
+    }
+  },
+  { immediate: true }
+)
 </script>
