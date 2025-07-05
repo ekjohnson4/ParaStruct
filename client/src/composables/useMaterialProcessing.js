@@ -14,6 +14,16 @@ export function useMaterialProcessing(calculations) {
 
   const materialSpecs = computed(() => ({
     foundation: [
+      materialToggles.gravel && {
+        name: 'gravel',
+        query: 'drainage gravel bulk bag ton',
+        quantity: calculations.gravelCalculation.value.volumeCubicFeet
+      },
+      materialToggles.wood && {
+        name: 'wood',
+        query: `${calculations.woodSize.value} pressure treated lumber ${calculations.woodLength.value}ft`,
+        quantity: calculations.woodCalculation.value.boards
+      },
       materialToggles.rebar && {
         name: 'rebar',
         query: `rebar ${calculations.rebarSize.value} ${calculations.poleLength.value}ft`,
@@ -24,16 +34,6 @@ export function useMaterialProcessing(calculations) {
         name: 'concrete',
         query: `high strength concrete mix ${calculations.concreteBagWeight.value} lb`,
         quantity: calculations.concreteBagsNeeded.value
-      },
-      materialToggles.wood && {
-        name: 'wood',
-        query: `${calculations.woodSize.value} pressure treated lumber ${calculations.woodLength.value}ft`,
-        quantity: calculations.woodCalculation.value.boards
-      },
-      materialToggles.gravel && {
-        name: 'gravel',
-        query: 'drainage gravel bulk bag ton',
-        quantity: calculations.gravelCalculation.value.volumeCubicFeet
       },
       materialToggles.sealer && {
         name: 'sealer',

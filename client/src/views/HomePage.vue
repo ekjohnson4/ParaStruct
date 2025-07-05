@@ -51,31 +51,67 @@
             @change="clampThickness"
           >
         </div>
-        <div class="accordion" id="accordionConcrete">
+        <div class="accordion" id="accordionGravel">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConcrete" aria-expanded="true" aria-controls="collapseConcrete">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGravel" aria-expanded="true" aria-controls="collapseGravel">
                 <div class="accordion-text-group">
-                  <div class="accordion-header-text">Concrete Settings</div>
-                  <div class="accordion-header-subtext">{{ calculations.concreteBagWeight.value }} lb bags</div>
+                  <div class="accordion-header-text">Gravel Settings</div>
+                  <div class="accordion-header-subtext">{{calculations.gravelDepth.value}} in. deep</div>
                 </div>
               </button>
-              <!-- <input
-                class="form-check-input me-2"
-                type="checkbox"
-                v-model="materialToggles.concrete"
-                id="toggleConcrete"
-              /> -->
             </h2>
-            <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionConcrete">
+            <div id="collapseGravel" class="accordion-collapse collapse" data-bs-parent="#accordionGravel">
               <div class="accordion-body">
                 <div class="config-item">
-                  <span class="config-label">Bag Weight (lbs):</span>
-                  <select v-model.number="calculations.concreteBagWeight.value" class="input-field">
-                    <option :value="50">50 lbs</option>
-                    <option :value="60">60 lbs</option>
-                    <option :value="80">80 lbs</option>
+                  <span class="config-label">Depth (inches):</span>
+                  <input
+                    v-model.number="calculations.gravelDepth.value"
+                    type="number"
+                    min="4"
+                    max="12"
+                    step="1"
+                    placeholder="e.g., 6"
+                    class="input-field"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion" id="accordionWood">
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWood" aria-expanded="true" aria-controls="collapseWood">
+                <div class="accordion-text-group">
+                  <div class="accordion-header-text">Wood Settings</div>
+                  <div class="accordion-header-subtext">{{calculations.woodSize.value}}"x{{calculations.woodLength.value}}''</div>
+                </div>
+              </button>
+            </h2>
+            <div id="collapseWood" class="accordion-collapse collapse" data-bs-parent="#accordionWood">
+              <div class="accordion-body">
+                <div class="config-item">
+                  <span class="config-label">Size:</span>
+                  <select v-model="calculations.woodSize.value" class="input-field">
+                    <option value="2x4">2x4</option>
+                    <option value="2x6">2x6</option>
+                    <option value="2x8">2x8</option>
+                    <option value="2x10">2x10</option>
+                    <option value="2x12">2x12</option>
                   </select>
+                </div>
+                <div class="config-item">
+                  <span class="config-label">Length (ft):</span>
+                  <input
+                    v-model.number="calculations.woodLength.value"
+                    type="number"
+                    min="6"
+                    max="16"
+                    step="2"
+                    class="input-field"
+                    placeholder="e.g., 10"
+                  />
                 </div>
               </div>
             </div>
@@ -130,68 +166,31 @@
             </div>
           </div>
         </div>
-
-        <div class="accordion" id="accordionWood">
+        <div class="accordion" id="accordionConcrete">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWood" aria-expanded="true" aria-controls="collapseWood">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConcrete" aria-expanded="true" aria-controls="collapseConcrete">
                 <div class="accordion-text-group">
-                  <div class="accordion-header-text">Wood Settings</div>
-                  <div class="accordion-header-subtext">{{calculations.woodSize.value}}"x{{calculations.woodLength.value}}''</div>
+                  <div class="accordion-header-text">Concrete Settings</div>
+                  <div class="accordion-header-subtext">{{ calculations.concreteBagWeight.value }} lb bags</div>
                 </div>
               </button>
+              <!-- <input
+                class="form-check-input me-2"
+                type="checkbox"
+                v-model="materialToggles.concrete"
+                id="toggleConcrete"
+              /> -->
             </h2>
-            <div id="collapseWood" class="accordion-collapse collapse" data-bs-parent="#accordionWood">
+            <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionConcrete">
               <div class="accordion-body">
                 <div class="config-item">
-                  <span class="config-label">Size:</span>
-                  <select v-model="calculations.woodSize.value" class="input-field">
-                    <option value="2x4">2x4</option>
-                    <option value="2x6">2x6</option>
-                    <option value="2x8">2x8</option>
-                    <option value="2x10">2x10</option>
-                    <option value="2x12">2x12</option>
+                  <span class="config-label">Bag Weight (lbs):</span>
+                  <select v-model.number="calculations.concreteBagWeight.value" class="input-field">
+                    <option :value="50">50 lbs</option>
+                    <option :value="60">60 lbs</option>
+                    <option :value="80">80 lbs</option>
                   </select>
-                </div>
-                <div class="config-item">
-                  <span class="config-label">Length (ft):</span>
-                  <input
-                    v-model.number="calculations.woodLength.value"
-                    type="number"
-                    min="6"
-                    max="16"
-                    step="2"
-                    class="input-field"
-                    placeholder="e.g., 10"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="accordion" id="accordionGravel">
-          <div class="accordion-item">
-            <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGravel" aria-expanded="true" aria-controls="collapseGravel">
-                <div class="accordion-text-group">
-                  <div class="accordion-header-text">Gravel Settings</div>
-                  <div class="accordion-header-subtext">{{calculations.gravelDepth.value}} in. deep</div>
-                </div>
-              </button>
-            </h2>
-            <div id="collapseGravel" class="accordion-collapse collapse" data-bs-parent="#accordionGravel">
-              <div class="accordion-body">
-                <div class="config-item">
-                  <span class="config-label">Depth (inches):</span>
-                  <input
-                    v-model.number="calculations.gravelDepth.value"
-                    type="number"
-                    min="4"
-                    max="12"
-                    step="1"
-                    placeholder="e.g., 6"
-                    class="input-field"
-                  />
                 </div>
               </div>
             </div>
