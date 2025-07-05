@@ -73,7 +73,8 @@ const answer = (experienced) => {
 }
 
 .intro-img {
-  width: 81%;
+  width: 80%;
+  max-width: 1000px;
   height: auto;
 }
 </style>
