@@ -17,7 +17,17 @@
 
   <div class="settings-container">
     <div class="settings-section">
-      <h1 class="settings-title">Local Pricing</h1>
+      <h1 class="settings-title">
+        Local Pricing
+        <span class="info-icon-container">
+          <font-awesome-icon
+            icon="info"
+            class="info-icon"
+            @mouseenter="showTooltip($event, 'Set custom prices for materials in your local area. These prices will be used for cost calculations throughout the app.')"
+            @mouseleave="hideTooltip"
+          />
+        </span>
+      </h1>
       <div class="settings-body">
         <ul class="settings-body-content">
           <li
@@ -50,14 +60,24 @@
     </div>
 
     <div class="settings-section">
-      <h1 class="settings-title">Learner Mode</h1>
+      <h1 class="settings-title">
+        Learner Mode
+        <span class="info-icon-container">
+          <font-awesome-icon
+            icon="info"
+            class="info-icon"
+            @mouseenter="showTooltip($event, 'Toggle between Learner Mode (with helpful explanations and guidance) and Experienced Mode (streamlined interface for advanced users).')"
+            @mouseleave="hideTooltip"
+          />
+        </span>
+      </h1>
       <div class="settings-body">
         <ul class="settings-body-content">
           <li class="settings-list-item">
             <div class="row align-items-center">
               <div class="col">
                 <label class="settings-item-title" for="learnerModeToggle">
-                  {{ store.isExperienced ? 'Experienced Mode Active' : 'Learner Mode Active' }}
+                  Learner Mode
                 </label>
               </div>
               <div class="col item-price-container align-items-center justify-content-end form-switch">
@@ -65,7 +85,7 @@
                   class="form-check-input"
                   type="checkbox"
                   id="learnerModeToggle"
-                  v-model="store.isExperienced"
+                  v-model="learnerModeToggle"
                 />
               </div>
             </div>
@@ -78,10 +98,19 @@
 
     </div>
   </div>
+
+  <!-- Custom Tooltip -->
+  <div
+    v-if="tooltipVisible"
+    class="custom-tooltip"
+    :style="{ top: tooltipY + 'px', left: tooltipX + 'px' }"
+  >
+    {{ tooltipText }}
+  </div>
 </template>
 
 <script setup>
-import { reactive, watch, onMounted } from 'vue'
+import { reactive, watch, onMounted, computed, ref } from 'vue'
 import { useMaterialsStore } from '../stores/materials'
 
 const store = useMaterialsStore()
@@ -93,6 +122,32 @@ const localPrices = reactive([
   { id: 'GRAVEL', name: 'Gravel', price: null, unit: 'unit' },
   { id: 'SEALER', name: 'Sealer', price: null, unit: 'unit' }
 ])
+
+// Computed property to handle the inverted toggle
+const learnerModeToggle = computed({
+  get: () => !store.isExperienced,
+  set: (value) => {
+    store.isExperienced = !value
+  }
+})
+
+// Tooltip state
+const tooltipVisible = ref(false)
+const tooltipText = ref('')
+const tooltipX = ref(0)
+const tooltipY = ref(0)
+
+// Tooltip functions
+const showTooltip = (event, text) => {
+  tooltipText.value = text
+  tooltipX.value = event.clientX - 12
+  tooltipY.value = event.clientY + 12
+  tooltipVisible.value = true
+}
+
+const hideTooltip = () => {
+  tooltipVisible.value = false
+}
 
 // On mount, populate localPrices from the store
 onMounted(() => {
