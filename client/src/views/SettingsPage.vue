@@ -23,8 +23,10 @@
           <font-awesome-icon
             icon="info"
             class="info-icon"
-            @mouseenter="showTooltip($event, 'Set custom prices for materials in your local area. These prices will be used for cost calculations throughout the app.')"
-            @mouseleave="hideTooltip"
+            ref="localPricingTooltip"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-title="Set custom prices for materials in your local area. These prices will be used for cost calculations throughout the app."
           />
         </span>
       </h1>
@@ -66,8 +68,10 @@
           <font-awesome-icon
             icon="info"
             class="info-icon"
-            @mouseenter="showTooltip($event, 'Toggle between Learner Mode (with helpful explanations and guidance) and Experienced Mode (streamlined interface for advanced users).')"
-            @mouseleave="hideTooltip"
+            ref="learnerModeTooltip"
+            data-bs-toggle="tooltip"
+            data-bs-placement="bottom"
+            data-bs-title="Toggle between Learner Mode (with helpful explanations and guidance) and Experienced Mode (streamlined interface for advanced users)."
           />
         </span>
       </h1>
@@ -98,20 +102,12 @@
 
     </div>
   </div>
-
-  <!-- Custom Tooltip -->
-  <div
-    v-if="tooltipVisible"
-    class="custom-tooltip"
-    :style="{ top: tooltipY + 'px', left: tooltipX + 'px' }"
-  >
-    {{ tooltipText }}
-  </div>
 </template>
 
 <script setup>
 import { reactive, watch, onMounted, computed, ref } from 'vue'
 import { useMaterialsStore } from '../stores/materials'
+import { Tooltip } from 'bootstrap'
 
 const store = useMaterialsStore()
 
@@ -131,30 +127,24 @@ const learnerModeToggle = computed({
   }
 })
 
-// Tooltip state
-const tooltipVisible = ref(false)
-const tooltipText = ref('')
-const tooltipX = ref(0)
-const tooltipY = ref(0)
+// Tooltip refs
+const localPricingTooltip = ref(null)
+const learnerModeTooltip = ref(null)
 
-// Tooltip functions
-const showTooltip = (event, text) => {
-  tooltipText.value = text
-  tooltipX.value = event.clientX - 12
-  tooltipY.value = event.clientY + 12
-  tooltipVisible.value = true
-}
-
-const hideTooltip = () => {
-  tooltipVisible.value = false
-}
-
-// On mount, populate localPrices from the store
+// On mount, populate localPrices from the store and initialize tooltips
 onMounted(() => {
   localPrices.forEach(item => {
     const storeVal = store.localPrices[item.id.toLowerCase()]
     item.price = typeof storeVal === 'number' ? storeVal : null
   })
+
+  // Initialize Bootstrap tooltips
+  if (localPricingTooltip.value) {
+    new Tooltip(localPricingTooltip.value.$el)
+  }
+  if (learnerModeTooltip.value) {
+    new Tooltip(learnerModeTooltip.value.$el)
+  }
 })
 
 // Update store whenever localPrices change
