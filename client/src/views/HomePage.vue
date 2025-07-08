@@ -511,4 +511,60 @@ watch(
   },
   { immediate: true }
 )
+
+watch(
+  () => calculations.rebarSize.value,
+  (newRebarSize) => {
+    // Provide general information about rebar sizes without specific recommendations
+    switch (newRebarSize) {
+      case '#3':
+        alertify.message('#3 rebar (3/8" diameter) is commonly used for lighter applications and thin slabs.')
+        break
+      case '#4':
+        alertify.message('#4 rebar (1/2" diameter) is the most commonly used size for residential foundations.')
+        break
+      case '#5':
+        alertify.message('#5 rebar (5/8" diameter) provides additional strength for heavier applications.')
+        break
+      case '#6':
+        alertify.message('#6 rebar (3/4" diameter) is typically used for heavy-duty structural applications.')
+        break
+    }
+  }
+)
+
+const shownMessages = ref({
+  spacingOver18: false,
+  spacing12: false,
+  lastSpacingMessageTime: 0
+})
+
+watch(
+  () => calculations.rebarSpacing.value,
+  (newSpacing) => {
+    const now = Date.now()
+    const timeSinceLastMessage = now - shownMessages.value.lastSpacingMessageTime
+
+    // Only show messages if enough time has passed (2 seconds) to prevent spam
+    if (timeSinceLastMessage > 2000) {
+      if (newSpacing === 12 && !shownMessages.value.spacing12) {
+        alertify.success('12" spacing is a common standard for residential foundations.')
+        shownMessages.value.spacing12 = true
+        shownMessages.value.lastSpacingMessageTime = now
+      } else if (newSpacing > 18 && !shownMessages.value.spacingOver18) {
+        alertify.message('Note: Spacing over 18" may require engineering review for some applications.')
+        shownMessages.value.spacingOver18 = true
+        shownMessages.value.lastSpacingMessageTime = now
+      }
+    }
+
+    // Reset flags when moving away from the conditions
+    if (newSpacing !== 12) {
+      shownMessages.value.spacing12 = false
+    }
+    if (newSpacing <= 18) {
+      shownMessages.value.spacingOver18 = false
+    }
+  }
+)
 </script>
