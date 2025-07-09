@@ -35,6 +35,10 @@ const costPopups = ref([])
 
 const props = defineProps({
   isOpen: Boolean,
+  isDialogOpen: {
+    type: Boolean,
+    default: false
+  },
   blockSqFt: {
     type: Number,
     default: 1
@@ -188,8 +192,11 @@ function animate() {
 }
 
 function onPointerMove(event) {
-  // Skip if controls are active (CTRL is pressed)
-  if (controls.enabled) return
+  // Skip if controls are active (CTRL is pressed) or any dialog is open
+  if (controls.enabled || isInfoDialogOpen()) {
+    rollOverMesh.visible = false
+    return
+  }
 
   pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1)
   raycaster.setFromCamera(pointer, camera)
@@ -280,8 +287,10 @@ function snapToGrid(pos) {
 }
 
 function onPointerDown(event) {
-  // Skip if controls are active (CTRL is pressed)
-  if (controls.enabled) return
+  // Skip if controls are active (CTRL is pressed) or any dialog is open
+  if (controls.enabled || isInfoDialogOpen()) {
+    return
+  }
 
   isMouseDown = true
   pointer.set((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1)
@@ -362,6 +371,12 @@ function onDocumentKeyUp(event) {
     controls.enabled = false
     controls.update() // Ensure final position is rendered
   }
+}
+
+// Check if info modal is open:
+function isInfoDialogOpen() {
+  if (props.isDialogOpen) return true
+  return false
 }
 
 function render() {

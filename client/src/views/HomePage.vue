@@ -272,6 +272,7 @@
     <HomePageMain
       ref="mainCanvas"
       :isOpen="isOpen"
+      :isDialogOpen="isDialogOpen"
       :blockSqFt="calculations.blockSqFt.value"
       :foundationThickness="calculations.foundationThickness.value"
       @block-added="handleBlockAdded"
@@ -410,7 +411,11 @@ const fetchAllMaterials = async () => {
   }
 }
 
+const isDialogOpen = ref(false)
+
+// Modify the showInfo function to set the flag:
 function showInfo() {
+  isDialogOpen.value = true
   alertify.alert(
     'Controls',
     `
@@ -420,7 +425,13 @@ function showInfo() {
     <strong>Ctrl + drag (left-click)</strong>: move camera<br/>
     <strong>Ctrl + drag (right-click)</strong>: rotate camera<br/>
     <strong>Ctrl + scroll</strong>: zoom
-    `
+    `,
+    function() {
+      // Add a small delay to ensure the dialog is fully closed
+      setTimeout(() => {
+        isDialogOpen.value = false
+      }, 100)
+    }
   )
 }
 
