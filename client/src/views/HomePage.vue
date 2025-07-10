@@ -475,7 +475,7 @@ const initializeYouTubeDialog = () => {
           iframe = document.createElement('iframe');
           iframe.frameBorder = "no";
           iframe.width = "100%";
-          iframe.height = "315px"; // Set fixed height for video
+          iframe.height = "50%";
           iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
           iframe.allowFullscreen = true;
 
@@ -484,6 +484,7 @@ const initializeYouTubeDialog = () => {
           textContainer.style.padding = '15px';
           textContainer.style.backgroundColor = '#f8f9fa';
           textContainer.style.borderTop = '1px solid #dee2e6';
+          textContainer.style.maxHeight = '50%';
           textContainer.style.overflowY = 'auto';
           textContainer.style.fontSize = '14px';
           textContainer.style.lineHeight = '1.5';
@@ -493,7 +494,7 @@ const initializeYouTubeDialog = () => {
           this.elements.content.appendChild(textContainer);
 
           // Give the dialog initial height (half the screen height)
-          this.elements.body.style.minHeight = 620 + 'px';
+          this.elements.body.style.minHeight = screen.height * 0.75 + 'px';
 
           // Give the dialog initial width (half the screen width)
           this.elements.body.style.minWidth = 300 + 'px';
@@ -548,11 +549,12 @@ const showIntroDialog = () => {
     <h4>Welcome to ParaStruct!</h4>
     <p>Here's a short video to give you a quick overlook about how concrete slabs are constructed. The example in the
     video is small, and therefore doesn't need rebar reinforcement. For more resources on rebar reinforcement, go to the
-    link(s) below:</p>
+    links below:</p>
     <ul>
       <li><a href="https://www.youtube.com/watch?v=oSAHqs2kFl0">How to Pour a Concrete Slab from Start to Finish!! DIY Concrete Prep and Finish</a></li>
     </ul>
     <p>Use the sidebar to adjust material specifications and see real-time cost estimates.</p>
+    <p><em>Watch the video above for a quick tutorial!</em></p>
   `;
 
   // Show the YouTube video dialog with text
