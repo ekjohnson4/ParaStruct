@@ -5,6 +5,7 @@ export const useMaterialsStore = defineStore('materials', () => {
   const allMaterials = ref({})
   const localPrices = ref({})
   const hasCompletedIntro = ref(false)
+  const hasSeenVideo = ref(false)
   const isExperienced = ref(false)
 
   const setAllMaterials = (data) => {
@@ -26,14 +27,20 @@ export const useMaterialsStore = defineStore('materials', () => {
     hasCompletedIntro.value = true
   }
 
+  const setVideoAnswer = () => {
+    hasSeenVideo.value = true
+  }
+
   return {
     allMaterials,
     localPrices,
     setAllMaterials,
     setLocalPrices,
     hasCompletedIntro,
+    hasSeenVideo,
     isExperienced,
-    setIntroAnswer
+    setIntroAnswer,
+    setVideoAnswer
   }
 }, {
   persist: {

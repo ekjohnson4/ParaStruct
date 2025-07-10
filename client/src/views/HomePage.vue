@@ -451,8 +451,106 @@ const getMaterialImage = (type) => {
   }
 };
 
+const initializeYouTubeDialog = () => {
+  if (!alertify.YoutubeDialog) {
+    alertify.dialog('YoutubeDialog', function() {
+      var iframe;
+      return {
+        main: function(videoId) {
+          return this.set({ 'videoId': videoId });
+        },
+        setup: function() {
+          return {
+            options: {
+              padding: false,
+              overflow: false,
+            }
+          };
+        },
+        build: function() {
+          // Create the iframe element
+          iframe = document.createElement('iframe');
+          iframe.frameBorder = "no";
+          iframe.width = "100%";
+          iframe.height = "100%";
+          iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          iframe.allowFullscreen = true;
+
+          // Add it to the dialog
+          this.elements.content.appendChild(iframe);
+
+          // Give the dialog initial height (half the screen height)
+          this.elements.body.style.minHeight = screen.height * 0.5 + 'px';
+        },
+        settings: {
+          videoId: undefined
+        },
+        settingUpdated: function(key, oldValue, newValue) {
+          switch(key) {
+            case 'videoId':
+              iframe.src = "https://www.youtube.com/embed/" + newValue + "?enablejsapi=1&autoplay=1";
+              break;
+          }
+        },
+        hooks: {
+          onclose: function() {
+            // Pause video when dialog is closed
+            if (iframe && iframe.contentWindow) {
+              iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+            }
+          },
+          onupdate: function(option, oldValue, newValue) {
+            switch(option) {
+              case 'resizable':
+                if (newValue) {
+                  this.elements.content.removeAttribute('style');
+                  iframe && iframe.removeAttribute('style');
+                } else {
+                  this.elements.content.style.minHeight = 'inherit';
+                  iframe && (iframe.style.minHeight = 'inherit');
+                }
+                break;
+            }
+          }
+        }
+      };
+    });
+  }
+};
+
+const showIntroDialog = () => {
+  isDialogOpen.value = true;
+
+  // Initialize the YouTube dialog
+  initializeYouTubeDialog();
+
+  // Show the YouTube video dialog
+  alertify.YoutubeDialog('JLQjnTUHzQ4').set({
+    title: 'Welcome!',
+    frameless: false,
+    resizable: true,
+    maximizable: true,
+    modal: true,
+    onclose: function() {
+      // After video dialog closes, ask about experience level
+      setTimeout(() => {
+        isDialogOpen.value = false;
+      }, 100);
+    }
+  });
+};
+
 // Lifecycle
-onMounted(fetchAllMaterials)
+onMounted(() => {
+  fetchAllMaterials()
+
+  // Show intro video if user hasn't seen it
+  if (!store.hasSeenVideo) {
+    setTimeout(() => {
+      showIntroDialog();
+    }, 100)
+  }
+})
 
 // Watchers
 watch(

@@ -99,6 +99,9 @@
       <button @click="store.hasCompletedIntro = false" class="btn btn-warning mt-3">
         Reset Intro (for testing)
       </button>
+      <button @click="store.hasSeenVideo = false" class="btn btn-warning mt-3">
+        Reset Video (for testing)
+      </button>
 
     </div>
   </div>
