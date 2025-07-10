@@ -535,6 +535,7 @@ const showIntroDialog = () => {
     maximizable: true,
     modal: true,
     onclose: function() {
+      store.setVideoAnswer();
       setTimeout(() => {
         isDialogOpen.value = false;
       }, 100);
