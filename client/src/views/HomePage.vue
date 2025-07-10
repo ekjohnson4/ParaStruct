@@ -481,6 +481,9 @@ const initializeYouTubeDialog = () => {
 
           // Give the dialog initial height (half the screen height)
           this.elements.body.style.minHeight = screen.height * 0.5 + 'px';
+
+          // Give the dialog initial width (half the screen width)
+          this.elements.body.style.minWidth = screen.width * 0.5 + 'px';
         },
         settings: {
           videoId: undefined
@@ -532,7 +535,6 @@ const showIntroDialog = () => {
     maximizable: true,
     modal: true,
     onclose: function() {
-      // After video dialog closes, ask about experience level
       setTimeout(() => {
         isDialogOpen.value = false;
       }, 100);
