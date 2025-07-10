@@ -483,7 +483,7 @@ const initializeYouTubeDialog = () => {
           this.elements.body.style.minHeight = screen.height * 0.5 + 'px';
 
           // Give the dialog initial width (half the screen width)
-          this.elements.body.style.minWidth = screen.width * 0.5 + 'px';
+          this.elements.body.style.minWidth = 300 + 'px';
         },
         settings: {
           videoId: undefined
