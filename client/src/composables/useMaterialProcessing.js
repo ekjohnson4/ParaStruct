@@ -1,46 +1,55 @@
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useMaterialsStore } from '../stores/materials'
 
 export function useMaterialProcessing(calculations) {
   const store = useMaterialsStore()
 
-  const materialToggles = {
+  const materialToggles = ref({
     concrete: true,
     rebar: true,
     wood: true,
     gravel: true,
     sealer: true
+  })
+
+  const toggleMaterial = (materialType) => {
+    materialToggles.value[materialType] = !materialToggles.value[materialType]
   }
 
   const materialSpecs = computed(() => ({
     foundation: [
-      materialToggles.gravel && {
+      {
         name: 'gravel',
         query: 'drainage gravel bulk bag ton',
-        quantity: calculations.gravelCalculation.value.volumeCubicFeet
+        quantity: calculations.gravelCalculation.value.volumeCubicFeet,
+        enabled: materialToggles.value.gravel
       },
-      materialToggles.wood && {
+      {
         name: 'wood',
         query: `${calculations.woodSize.value} pressure treated lumber ${calculations.woodLength.value}ft`,
-        quantity: calculations.woodCalculation.value.boards
+        quantity: calculations.woodCalculation.value.boards,
+        enabled: materialToggles.value.wood
       },
-      materialToggles.rebar && {
+      {
         name: 'rebar',
         query: `rebar ${calculations.rebarSize.value} ${calculations.poleLength.value}ft`,
         quantity: calculations.rebarCalculation.value.poles,
-        sizeAliases: calculations.sizeMap[calculations.rebarSize.value] || []
+        sizeAliases: calculations.sizeMap[calculations.rebarSize.value] || [],
+        enabled: materialToggles.value.rebar
       },
-      materialToggles.concrete && {
+      {
         name: 'concrete',
         query: `high strength concrete mix ${calculations.concreteBagWeight.value} lb`,
-        quantity: calculations.concreteBagsNeeded.value
+        quantity: calculations.concreteBagsNeeded.value,
+        enabled: materialToggles.value.concrete
       },
-      materialToggles.sealer && {
+      {
         name: 'sealer',
         query: 'water sealers concrete sealer clear',
-        quantity: calculations.concreteSealerCalculation.value.gallons
+        quantity: calculations.concreteSealerCalculation.value.gallons,
+        enabled: materialToggles.value.sealer
       }
-    ].filter(Boolean)
+    ]
   }))
 
   const filterMaterial = (material, spec) => {
@@ -102,7 +111,7 @@ export function useMaterialProcessing(calculations) {
     const effectivePrice = isUsingLocal ? localOverride :
                           (quantity >= bulkQty ? bulkPrice : regularPrice)
 
-    const displayPrice = isUsingLocal ? `$${localOverride.toFixed(2)}` :
+    const displayPrice = isUsingLocal ? `${localOverride.toFixed(2)}` :
                         (quantity >= bulkQty ? material.bulkPricing?.price : material.price)
 
     return {
@@ -116,7 +125,8 @@ export function useMaterialProcessing(calculations) {
       usesBulk: !isUsingLocal && quantity >= bulkQty,
       isLocal: isUsingLocal,
       title: isUsingLocal ? getLocalTitle(spec.name, spec) : material.title,
-      link: isUsingLocal ? null : material.link
+      link: isUsingLocal ? null : material.link,
+      enabled: spec.enabled
     }
   }
 
@@ -136,7 +146,10 @@ export function useMaterialProcessing(calculations) {
 
   const estimatedCost = computed(() => {
     return filteredMaterials.value.reduce((total, material) => {
-      return total + (material.effectivePrice * material.quantity)
+      if (material.enabled) {
+        return total + (material.effectivePrice * material.quantity)
+      }
+      return total
     }, 0).toFixed(2)
   })
 
@@ -160,6 +173,7 @@ export function useMaterialProcessing(calculations) {
     materialSpecs,
     filteredMaterials,
     estimatedCost,
-    materialToggles
+    materialToggles,
+    toggleMaterial
   }
 }

@@ -175,12 +175,6 @@
                   <div class="accordion-header-subtext">{{ calculations.concreteBagWeight.value }} lb bags</div>
                 </div>
               </button>
-              <!-- <input
-                class="form-check-input me-2"
-                type="checkbox"
-                v-model="materialToggles.concrete"
-                id="toggleConcrete"
-              /> -->
             </h2>
             <div id="collapseConcrete" class="accordion-collapse collapse" data-bs-parent="#accordionConcrete">
               <div class="accordion-body">
@@ -237,16 +231,21 @@
             class="item"
             v-for="(material, index) in materials.filteredMaterials.value"
             :key="index"
+            :class="{ 'toggled-off': !material.enabled }"
           >
             <img
               class="item-img"
               :src="getMaterialImage(material.type)"
               :alt="material.type + ' image'"
+              @click="materials.toggleMaterial(material.type)"
+              :class="{ 'toggled-off': !material.enabled }"
+              style="cursor: pointer;"
+              :title="material.enabled ? 'Click to exclude from estimate' : 'Click to include in estimate'"
             />
-            <a class="item-title" :href="material.link" target="_blank">
+            <a class="item-title" :href="material.link" target="_blank" :class="{ 'toggled-off': !material.enabled }">
               <strong>{{ material.title }}</strong>
             </a>
-            <div class="item-price">
+            <div class="item-price" :class="{ 'toggled-off': !material.enabled }">
               {{ material.displayPrice }}
               <span
                 v-if="material.bulkPricing && !material.usesBulk && !material.isLocal"
@@ -259,7 +258,7 @@
               <span v-if="material.usesBulk" class="bulk">bulk</span>
               <span v-if="material.isLocal" class="local">(local)</span>
             </div>
-            <div class="item-qty">
+            <div class="item-qty" :class="{ 'toggled-off': !material.enabled }">
               x{{material.quantity}}
             </div>
           </div>
