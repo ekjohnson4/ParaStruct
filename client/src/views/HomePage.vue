@@ -54,7 +54,7 @@
         <div class="accordion" id="accordionGravel">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGravel" aria-expanded="true" aria-controls="collapseGravel">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGravel" aria-expanded="false" aria-controls="collapseGravel">
                 <div class="accordion-text-group">
                   <div class="accordion-header-text">Gravel Settings</div>
                   <div class="accordion-header-subtext">{{calculations.gravelDepth.value}} in. deep</div>
@@ -82,7 +82,7 @@
         <div class="accordion" id="accordionWood">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWood" aria-expanded="true" aria-controls="collapseWood">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseWood" aria-expanded="false" aria-controls="collapseWood">
                 <div class="accordion-text-group">
                   <div class="accordion-header-text">Wood Settings</div>
                   <div class="accordion-header-subtext">{{calculations.woodSize.value}}"x{{calculations.woodLength.value}}''</div>
@@ -120,7 +120,7 @@
         <div class="accordion" id="accordionRebar">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRebar" aria-expanded="true" aria-controls="collapseRebar">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRebar" aria-expanded="false" aria-controls="collapseRebar">
                 <div class="accordion-text-group">
                   <div class="accordion-header-text">Rebar Settings</div>
                   <div class="accordion-header-subtext">{{ calculations.poleLength.value }} ft. {{calculations.rebarSize.value}}</div>
@@ -169,7 +169,7 @@
         <div class="accordion" id="accordionConcrete">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConcrete" aria-expanded="true" aria-controls="collapseConcrete">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConcrete" aria-expanded="false" aria-controls="collapseConcrete">
                 <div class="accordion-text-group">
                   <div class="accordion-header-text">Concrete Settings</div>
                   <div class="accordion-header-subtext">{{ calculations.concreteBagWeight.value }} lb bags</div>
@@ -494,7 +494,7 @@ const initializeYouTubeDialog = () => {
           this.elements.content.appendChild(textContainer);
 
           // Give the dialog initial height (half the screen height)
-          this.elements.body.style.minHeight = screen.height * 0.75 + 'px';
+          this.elements.body.style.minHeight = screen.height * 0.60 + 'px';
 
           // Give the dialog initial width (half the screen width)
           this.elements.body.style.minWidth = 300 + 'px';
