@@ -573,15 +573,77 @@ const showIntroDialog = () => {
   });
 };
 
+const showSeasonalTips = () => {
+  const currentMonth = new Date().getMonth()
+
+  if (currentMonth >= 10 || currentMonth <= 2) { // Nov-Feb
+    alertify.message("⚠️ Winter tip: Concrete should not be poured when temperatures drop below 40°F")
+  } else if (currentMonth >= 5 && currentMonth <= 8) { // Jun-Aug
+    alertify.message("☀️ Summer tip: Cover fresh concrete and keep it moist in hot weather")
+  }
+}
+
+// Centralized message throttling system
+const messageThrottler = {
+  lastMessageTimes: new Map(),
+  shownMessages: new Map(),
+
+  // Throttle messages by key with configurable delay
+  canShowMessage(key, delay = 2000) {
+    const now = Date.now()
+    const lastTime = this.lastMessageTimes.get(key) || 0
+    return now - lastTime > delay
+  },
+
+  // Mark message as shown and update timestamp
+  markMessageShown(key) {
+    this.lastMessageTimes.set(key, Date.now())
+    this.shownMessages.set(key, true)
+  },
+
+  // Check if specific message was already shown
+  wasMessageShown(key) {
+    return this.shownMessages.get(key) || false
+  },
+
+  // Reset specific message flag
+  resetMessageFlag(key) {
+    this.shownMessages.set(key, false)
+  },
+
+  // Show throttled message only if user is not experienced
+  showMessage(key, message, type = 'message', delay = 2000) {
+    if (!store.isExperienced && this.canShowMessage(key, delay)) {
+      alertify[type](message)
+      this.markMessageShown(key)
+      return true
+    }
+    return false
+  },
+
+  // Show message once per session (no throttling, just once per key)
+  showMessageOnce(key, message, type = 'message') {
+    if (!store.isExperienced && !this.wasMessageShown(key)) {
+      alertify[type](message)
+      this.shownMessages.set(key, true)
+      return true
+    }
+    return false
+  }
+}
+
 // Lifecycle
 onMounted(() => {
   fetchAllMaterials()
 
   // Show intro video if user hasn't seen it
-  if (!store.hasSeenVideo) {
-    setTimeout(() => {
-      showIntroDialog();
-    }, 100)
+  if (!store.isExperienced) {
+    if (!store.hasSeenVideo) {
+      setTimeout(() => {
+        showIntroDialog();
+      }, 100)
+    }
+    showSeasonalTips();
   }
 })
 
@@ -596,38 +658,6 @@ watch(
     calculations.gravelDepth
   ],
   fetchAllMaterials
-)
-
-// Add this watcher to validate wood size selection
-watch(
-  () => calculations.woodSize.value,
-  (newWoodSize) => {
-    const thickness = calculations.foundationThickness.value
-
-    // Map foundation thickness to appropriate wood sizes
-    const getRecommendedWoodSize = (thickness) => {
-      if (thickness <= 4) return '2x4'
-      if (thickness <= 6) return '2x6'
-      if (thickness <= 8) return '2x8'
-      if (thickness <= 10) return '2x10'
-      if (thickness <= 12) return '2x12'
-      return '2x8' // fallback
-    }
-
-    const recommendedSize = getRecommendedWoodSize(thickness)
-
-    // Check if selected wood size is appropriate
-    if (newWoodSize !== recommendedSize) {
-      const selectedHeight = parseInt(newWoodSize.split('x')[1])
-      const recommendedHeight = parseInt(recommendedSize.split('x')[1])
-
-      if (selectedHeight < thickness) {
-        alertify.warning(`Warning: ${newWoodSize} lumber may be too small for a ${thickness}" foundation. Consider using ${recommendedSize} or larger.`)
-      } else if (selectedHeight >= recommendedHeight + 2) {
-        alertify.warning(`Note: ${newWoodSize} lumber is larger than typically needed for a ${thickness}" foundation. ${recommendedSize} would be sufficient.`)
-      }
-    }
-  }
 )
 
 // Update the existing foundation thickness watcher to prevent triggering the warning
@@ -654,58 +684,204 @@ watch(
   { immediate: true }
 )
 
+// Wood size validation watcher
 watch(
-  () => calculations.rebarSize.value,
-  (newRebarSize) => {
-    // Provide general information about rebar sizes without specific recommendations
-    switch (newRebarSize) {
-      case '#3':
-        alertify.message('#3 rebar (3/8" diameter) is commonly used for lighter applications and thin slabs.')
-        break
-      case '#4':
-        alertify.message('#4 rebar (1/2" diameter) is the most commonly used size for residential foundations.')
-        break
-      case '#5':
-        alertify.message('#5 rebar (5/8" diameter) provides additional strength for heavier applications.')
-        break
-      case '#6':
-        alertify.message('#6 rebar (3/4" diameter) is typically used for heavy-duty structural applications.')
-        break
+  () => calculations.woodSize.value,
+  (newWoodSize) => {
+    if (store.isExperienced) return
+
+    const thickness = calculations.foundationThickness.value
+    const getRecommendedWoodSize = (thickness) => {
+      if (thickness <= 4) return '2x4'
+      if (thickness <= 6) return '2x6'
+      if (thickness <= 8) return '2x8'
+      if (thickness <= 10) return '2x10'
+      if (thickness <= 12) return '2x12'
+      return '2x8'
+    }
+
+    const recommendedSize = getRecommendedWoodSize(thickness)
+
+    if (newWoodSize !== recommendedSize) {
+      const selectedHeight = parseInt(newWoodSize.split('x')[1])
+      const recommendedHeight = parseInt(recommendedSize.split('x')[1])
+
+      if (selectedHeight < thickness) {
+        messageThrottler.showMessage(
+          `woodSize_${newWoodSize}_${thickness}`,
+          `Warning: ${newWoodSize} lumber may be too small for a ${thickness}" foundation. Consider using ${recommendedSize} or larger.`,
+          'warning'
+        )
+      } else if (selectedHeight >= recommendedHeight + 2) {
+        messageThrottler.showMessage(
+          `woodSize_oversized_${newWoodSize}_${thickness}`,
+          `Note: ${newWoodSize} lumber is larger than typically needed for a ${thickness}" foundation. ${recommendedSize} would be sufficient.`,
+          'warning'
+        )
+      }
     }
   }
 )
 
-const shownMessages = ref({
-  spacingOver18: false,
-  spacing12: false,
-  lastSpacingMessageTime: 0
-})
+// Cost estimation tips watcher
+watch(
+  () => materials.estimatedCost.value,
+  (newCost) => {
+    if (store.isExperienced) return
 
+    const cost = parseFloat(newCost)
+
+    if (cost > 1000) {
+      messageThrottler.showMessageOnce(
+        'cost_over_1000',
+        '💡 Tip: Consider renting a concrete mixer for projects over $1000',
+        'message'
+      )
+    } else if (cost > 500) {
+      messageThrottler.showMessageOnce(
+        'cost_over_500',
+        '💡 Tip: Buy materials in bulk for better prices on larger projects',
+        'message'
+      )
+    }
+  }
+)
+
+// Foundation thickness recommendations watcher
+watch(
+  () => calculations.foundationThickness.value,
+  (newThickness) => {
+    if (store.isExperienced) return
+
+    const recommendations = {
+      4: "4\" is suitable for lightweight structures like patios or walkways",
+      5: "5\" works for garden sheds and light storage buildings",
+      6: "6\" is good for garages and workshops with normal vehicle traffic",
+      8: "8\" is recommended for heavy equipment or commercial use",
+      10: "10\" is for heavy-duty applications or areas with freeze-thaw cycles",
+      12: "12\" provides maximum strength for extreme loads or poor soil conditions"
+    }
+
+    const message = recommendations[newThickness]
+    if (message) {
+      messageThrottler.showMessage(
+        `thickness_${newThickness}`,
+        message,
+        'message'
+      )
+    }
+  }
+)
+
+// Gravel depth recommendations watcher
+watch(
+  () => calculations.gravelDepth.value,
+  (newDepth) => {
+    if (store.isExperienced) return
+
+    // Reset flags when moving away from conditions
+    if (newDepth >= 4) messageThrottler.resetMessageFlag('gravel_less_4')
+    if (newDepth !== 6) messageThrottler.resetMessageFlag('gravel_6')
+    if (newDepth <= 8) messageThrottler.resetMessageFlag('gravel_over_8')
+
+    // Show appropriate messages
+    if (newDepth < 4 && !messageThrottler.wasMessageShown('gravel_less_4')) {
+      messageThrottler.showMessage(
+        'gravel_less_4',
+        'Less than 4" of gravel may not provide adequate drainage',
+        'warning'
+      )
+    } else if (newDepth === 6 && !messageThrottler.wasMessageShown('gravel_6')) {
+      messageThrottler.showMessage(
+        'gravel_6',
+        '6" is the standard gravel depth for most residential foundations',
+        'success'
+      )
+    } else if (newDepth > 8 && !messageThrottler.wasMessageShown('gravel_over_8')) {
+      messageThrottler.showMessage(
+        'gravel_over_8',
+        'Deep gravel beds are used in areas with poor drainage or clay soil',
+        'message'
+      )
+    }
+  }
+)
+
+// Foundation area building code watcher
+watch(
+  () => calculations.foundationArea.value,
+  (newArea) => {
+    if (store.isExperienced) return
+
+    if (newArea > 500) {
+      messageThrottler.showMessageOnce(
+        'area_over_500',
+        'Large foundations may require engineered drawings and soil analysis',
+        'warning'
+      )
+    } else if (newArea > 200) {
+      messageThrottler.showMessageOnce(
+        'area_over_200',
+        'Foundations over 200 sq ft typically require building permits',
+        'message'
+      )
+    } else if (newArea > 120) {
+      messageThrottler.showMessageOnce(
+        'area_over_120',
+        'Check local building codes - some areas require permits for foundations over 120 sq ft',
+        'message'
+      )
+    }
+  }
+)
+
+// Rebar size information watcher
+watch(
+  () => calculations.rebarSize.value,
+  (newRebarSize) => {
+    if (store.isExperienced) return
+
+    const rebarInfo = {
+      '#3': '#3 rebar (3/8" diameter) is commonly used for lighter applications and thin slabs.',
+      '#4': '#4 rebar (1/2" diameter) is the most commonly used size for residential foundations.',
+      '#5': '#5 rebar (5/8" diameter) provides additional strength for heavier applications.',
+      '#6': '#6 rebar (3/4" diameter) is typically used for heavy-duty structural applications.'
+    }
+
+    const message = rebarInfo[newRebarSize]
+    if (message) {
+      messageThrottler.showMessage(
+        `rebar_size_${newRebarSize}`,
+        message,
+        'message'
+      )
+    }
+  }
+)
+
+// Rebar spacing recommendations watcher
 watch(
   () => calculations.rebarSpacing.value,
   (newSpacing) => {
-    const now = Date.now()
-    const timeSinceLastMessage = now - shownMessages.value.lastSpacingMessageTime
+    if (store.isExperienced) return
 
-    // Only show messages if enough time has passed (2 seconds) to prevent spam
-    if (timeSinceLastMessage > 2000) {
-      if (newSpacing === 12 && !shownMessages.value.spacing12) {
-        alertify.success('12" spacing is a common standard for residential foundations.')
-        shownMessages.value.spacing12 = true
-        shownMessages.value.lastSpacingMessageTime = now
-      } else if (newSpacing > 18 && !shownMessages.value.spacingOver18) {
-        alertify.message('Note: Spacing over 18" may require engineering review for some applications.')
-        shownMessages.value.spacingOver18 = true
-        shownMessages.value.lastSpacingMessageTime = now
-      }
-    }
+    // Reset flags when moving away from conditions
+    if (newSpacing !== 12) messageThrottler.resetMessageFlag('spacing_12')
+    if (newSpacing <= 18) messageThrottler.resetMessageFlag('spacing_over_18')
 
-    // Reset flags when moving away from the conditions
-    if (newSpacing !== 12) {
-      shownMessages.value.spacing12 = false
-    }
-    if (newSpacing <= 18) {
-      shownMessages.value.spacingOver18 = false
+    // Show appropriate messages
+    if (newSpacing === 12 && !messageThrottler.wasMessageShown('spacing_12')) {
+      messageThrottler.showMessage(
+        'spacing_12',
+        '12" spacing is a common standard for residential foundations.',
+        'success'
+      )
+    } else if (newSpacing > 18 && !messageThrottler.wasMessageShown('spacing_over_18')) {
+      messageThrottler.showMessage(
+        'spacing_over_18',
+        'Note: Spacing over 18" may require engineering review for some applications.',
+        'message'
+      )
     }
   }
 )
