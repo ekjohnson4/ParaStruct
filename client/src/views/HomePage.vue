@@ -226,13 +226,14 @@
       <div class="materials-container">
         <div class="materials-wrapper">
           <div v-if="loadingMaterials" class="spinner"></div>
-          <div
-            v-else
-            class="item"
-            v-for="(material, index) in materials.filteredMaterials.value"
-            :key="index"
-            :class="{ 'toggled-off': !material.enabled }"
-          >
+        <div
+          v-else
+          class="item"
+          v-for="(material, index) in materials.filteredMaterials.value"
+          :key="index"
+          :class="{ 'toggled-off': !material.enabled }"
+        >
+          <div class="item-img-container">
             <img
               class="item-img"
               :src="getMaterialImage(material.type)"
@@ -242,26 +243,38 @@
               style="cursor: pointer;"
               :title="material.enabled ? 'Click to exclude from estimate' : 'Click to include in estimate'"
             />
-            <a class="item-title" :href="material.link" target="_blank" :class="{ 'toggled-off': !material.enabled }">
-              <strong>{{ material.title }}</strong>
-            </a>
-            <div class="item-price" :class="{ 'toggled-off': !material.enabled }">
-              {{ material.displayPrice }}
-              <span
-                v-if="material.bulkPricing && !material.usesBulk && !material.isLocal"
-                class="tooltip-hint"
-                @mouseenter="showTooltip($event, material)"
-                @mouseleave="hideTooltip"
-              >
-                ⓘ
-              </span>
-              <span v-if="material.usesBulk" class="bulk">bulk</span>
-              <span v-if="material.isLocal" class="local">(local)</span>
-            </div>
-            <div class="item-qty" :class="{ 'toggled-off': !material.enabled }">
-              x{{material.quantity}}
+            <!-- Hover icon overlay -->
+            <div class="hover-icon-overlay" :class="{ 'remove-mode': material.enabled }">
+              <font-awesome-icon
+                :icon="material.enabled ? 'minus-circle' : 'plus-circle'"
+                class="hover-icon"
+                :class="{ 'remove-icon': material.enabled, 'add-icon': !material.enabled }"
+              />
             </div>
           </div>
+
+          <a class="item-title" :href="material.link" target="_blank" :class="{ 'toggled-off': !material.enabled }">
+            <strong>{{ material.title }}</strong>
+          </a>
+
+          <div class="item-price" :class="{ 'toggled-off': !material.enabled }">
+            {{ material.displayPrice }}
+            <span
+              v-if="material.bulkPricing && !material.usesBulk && !material.isLocal"
+              class="tooltip-hint"
+              @mouseenter="showTooltip($event, material)"
+              @mouseleave="hideTooltip"
+            >
+              ⓘ
+            </span>
+            <span v-if="material.usesBulk" class="bulk">bulk</span>
+            <span v-if="material.isLocal" class="local">(local)</span>
+          </div>
+
+          <div class="item-qty" :class="{ 'toggled-off': !material.enabled }">
+            x{{material.quantity}}
+          </div>
+        </div>
         </div>
       </div>
   </div>

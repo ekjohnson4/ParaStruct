@@ -196,17 +196,25 @@
   opacity: 0.6;
 }
 
-.item-img {
+/* Container for image and hover icon */
+.item-img-container {
   grid-row: 1 / span 2;
   grid-column: 1;
+  position: relative;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-img {
   width: 50px;
   height: auto;
   transition: all 0.3s ease;
+  cursor: pointer;
   position: relative;
-}
-
-.item-img:hover {
-  transform: scale(1.05);
+  z-index: 1;
 }
 
 .item-img.toggled-off {
@@ -216,32 +224,70 @@
 
 .item-img.toggled-off:hover {
   opacity: 0.7;
-  transform: scale(1.05);
 }
 
-.item-img::after {
-  content: '';
+/* Hover icon overlay */
+.hover-icon-overlay {
   position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 12px;
-  height: 12px;
-  background: #28a745;
-  border-radius: 50%;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.item-img-container:hover .hover-icon-overlay {
+  opacity: 1;
+}
+
+.hover-icon {
+  font-size: 20px;
   transition: all 0.3s ease;
 }
 
-.item-img.toggled-off::after {
-  background: #dc3545;
+.add-icon {
+  color: #28a745;
 }
 
+.remove-icon {
+  color: #dc3545;
+}
+
+/* Hover effects for the icons */
+.item-img-container:hover .add-icon {
+  color: #34ce57;
+  transform: scale(1.1);
+}
+
+.item-img-container:hover .remove-icon {
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+/* Text styling for toggled off items */
 .item-title.toggled-off,
 .item-price.toggled-off,
 .item-qty.toggled-off {
   opacity: 0.5;
   text-decoration: line-through;
+}
+
+/* Optional: Add a subtle animation when hovering */
+.item-img-container:hover .hover-icon {
+  animation: pulse 0.6s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
 }
 
 .item-title {
