@@ -445,6 +445,8 @@
 
 .alertify .ajs-dialog {
   min-height: 70vh !important;
+  width: 40% !important;
+  min-width: 300px !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;

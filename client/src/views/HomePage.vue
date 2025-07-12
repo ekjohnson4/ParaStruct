@@ -528,10 +528,10 @@ const initializeYouTubeDialog = () => {
           this.elements.content.appendChild(iframe);
           this.elements.content.appendChild(textContainer);
 
-          // Give the dialog initial height (half the screen height)
+          // Give the dialog initial height
           this.elements.body.style.minHeight = screen.height * 0.60 + 'px';
 
-          // Give the dialog initial width (half the screen width)
+          // Give the dialog initial width
           this.elements.body.style.minWidth = 300 + 'px';
         },
         settings: {
