@@ -920,30 +920,6 @@ watch(
   }
 )
 
-// Cost estimation tips watcher
-watch(
-  () => materials.estimatedCost.value,
-  (newCost) => {
-    if (store.isExperienced) return
-
-    const cost = parseFloat(newCost)
-
-    if (cost > 1000) {
-      messageThrottler.showMessageOnce(
-        'cost_over_1000',
-        '💡 Tip: Consider renting a concrete mixer for projects over $1000',
-        'message'
-      )
-    } else if (cost > 500) {
-      messageThrottler.showMessageOnce(
-        'cost_over_500',
-        '💡 Tip: Buy materials in bulk for better prices on larger projects',
-        'message'
-      )
-    }
-  }
-)
-
 // Gravel depth recommendations watcher
 watch(
   () => calculations.gravelDepth.value,
@@ -952,7 +928,7 @@ watch(
 
     // Reset flags when moving away from conditions
     if (newDepth >= 4) messageThrottler.resetMessageFlag('gravel_less_4')
-    if (newDepth !== 6) messageThrottler.resetMessageFlag('gravel_6')
+    if (newDepth < 4 || newDepth > 6) messageThrottler.resetMessageFlag('gravel_6')
     if (newDepth <= 8) messageThrottler.resetMessageFlag('gravel_over_8')
 
     // Show appropriate messages
@@ -962,10 +938,10 @@ watch(
         'Less than 4" of gravel may not provide adequate drainage',
         'warning'
       )
-    } else if (newDepth === 6 && !messageThrottler.wasMessageShown('gravel_6')) {
+    } else if (newDepth >= 4 && newDepth <= 6 && !messageThrottler.wasMessageShown('gravel_6')) {
       messageThrottler.showMessage(
         'gravel_6',
-        '6" is the standard gravel depth for most residential foundations',
+        '4-6" is the standard gravel depth for most residential foundations',
         'success'
       )
     } else if (newDepth > 8 && !messageThrottler.wasMessageShown('gravel_over_8')) {
