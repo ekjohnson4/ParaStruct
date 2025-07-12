@@ -771,16 +771,6 @@ const showSummary = () => {
   })
 }
 
-const showSeasonalTips = () => {
-  const currentMonth = new Date().getMonth()
-
-  if (currentMonth >= 10 || currentMonth <= 2) { // Nov-Feb
-    alertify.message("⚠️ Winter tip: Concrete should not be poured when temperatures drop below 40°F")
-  } else if (currentMonth >= 5 && currentMonth <= 8) { // Jun-Aug
-    alertify.message("☀️ Summer tip: Cover fresh concrete and keep it moist in hot weather")
-  }
-}
-
 // Centralized message throttling system
 const messageThrottler = {
   lastMessageTimes: new Map(),
@@ -841,7 +831,6 @@ onMounted(() => {
         showIntroDialog();
       }, 100)
     }
-    showSeasonalTips();
   }
 })
 
