@@ -96,12 +96,12 @@
           </li>
         </ul>
       </div>
-      <button @click="store.hasCompletedIntro = false" class="btn btn-warning mt-3">
+      <!--<button @click="store.hasCompletedIntro = false" class="btn btn-warning mt-3">
         Reset Intro (for testing)
       </button>
       <button @click="store.hasSeenVideo = false" class="btn btn-warning mt-3">
         Reset Video (for testing)
-      </button>
+      </button>-->
 
     </div>
   </div>
