@@ -288,6 +288,7 @@
         <span>Summary</span>
       </button>
       <button
+        @click="fetchAllMaterials"
         @pointerdown.stop
         class="btn btn-primary refresh-btn d-flex justify-content-center align-items-center gap-2"
       >
