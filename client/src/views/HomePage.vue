@@ -223,9 +223,9 @@
     @pointerdown.stop
     @click.stop
   >
-      <div class="materials-container">
-        <div class="materials-wrapper">
-          <div v-if="loadingMaterials" class="spinner"></div>
+    <div class="materials-container">
+      <div class="materials-wrapper">
+        <div v-if="loadingMaterials" class="spinner"></div>
         <div
           v-else
           class="item"
@@ -275,8 +275,28 @@
             x{{material.quantity}}
           </div>
         </div>
-        </div>
       </div>
+      <div class="materials-btns">
+      <button
+        @click="showSummary"
+        @pointerdown.stop
+        class="btn btn-primary summary-btn d-flex justify-content-center align-items-center gap-2"
+      >
+        <font-awesome-icon
+          icon="clipboard-list"
+        />
+        <span>Summary</span>
+      </button>
+      <button
+        @pointerdown.stop
+        class="btn btn-primary refresh-btn d-flex justify-content-center align-items-center gap-2"
+      >
+        <font-awesome-icon
+          icon="rotate-right"
+        />
+      </button>
+      </div>
+    </div>
   </div>
 
   <!-- Three.js Canvas -->
@@ -311,6 +331,7 @@ import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import HomePageMain from '../components/Home/HomePageMain.vue'
 import { useFoundationCalculations } from '../composables/useFoundationCalculations'
 import { useMaterialProcessing } from '../composables/useMaterialProcessing'
+import { useFoundationSummary } from '../composables/useFoundationSummary'
 import { useMaterialsStore } from '../stores/materials'
 import alertify from 'alertifyjs'
 
@@ -322,6 +343,7 @@ alertify.defaults.theme.input = "form-control";
 // Composables
 const calculations = useFoundationCalculations();
 const materials = useMaterialProcessing(calculations);
+const summaryComposable = useFoundationSummary(calculations, materials)
 const store = useMaterialsStore();
 
 // UI State
@@ -566,7 +588,6 @@ const showIntroDialog = () => {
       <li><a href="https://www.youtube.com/watch?v=oSAHqs2kFl0">How to Pour a Concrete Slab from Start to Finish!! DIY Concrete Prep and Finish</a></li>
     </ul>
     <p>Use the sidebar to adjust material specifications and see real-time cost estimates.</p>
-    <p><em>Watch the video above for a quick tutorial!</em></p>
   `;
 
   // Show the YouTube video dialog with text
@@ -584,6 +605,170 @@ const showIntroDialog = () => {
     }
   });
 };
+
+const showSummary = () => {
+  isDialogOpen.value = true
+  const summary = summaryComposable.summary.value
+
+  let htmlContent = `
+    <div class="summary-dialog">
+      <div class="project-overview">
+        <h4>📋 Project Overview</h4>
+        <div class="overview-grid">
+          <div><strong>Area:</strong> ${summary.project.area} sq ft</div>
+          <div><strong>Thickness:</strong> ${summary.project.thickness}"</div>
+          <div><strong>Est. Cost:</strong> $${summary.project.estimatedCost}</div>
+          <div><strong>Complexity:</strong> ${summary.project.complexity}</div>
+        </div>
+      </div>
+
+      <div class="analysis-section">
+        <h4>🔍 Design Analysis</h4>
+
+        <div class="analysis-item">
+          <strong>Foundation Thickness:</strong>
+          <p>Good for ${summary.analyses.thickness.use}</p>
+        </div>
+
+        <div class="analysis-item">
+          <strong>Wood Forms:</strong>
+          ${summary.analyses.wood.status === 'good' ?
+            `<p class="good">✅ ${summary.analyses.wood.message}</p>` :
+            `<p class="warning">⚠️ ${summary.analyses.wood.message}</p>`
+          }
+        </div>
+
+        <div class="analysis-item">
+          <strong>Rebar Configuration:</strong>
+          ${summary.analyses.rebar.map(analysis => {
+            const icon = analysis.type === 'good' ? '✅' : analysis.type === 'warning' ? '⚠️' : 'ℹ️'
+            return `<p class="${analysis.type}">${icon} ${analysis.message}</p>`
+          }).join('')}
+        </div>
+
+        <div class="analysis-item">
+          <strong>Gravel Base:</strong>
+          ${summary.analyses.gravel.status === 'good' ?
+            `<p class="good">✅ ${summary.analyses.gravel.message}</p>` :
+            `<p class="${summary.analyses.gravel.status}">⚠️ ${summary.analyses.gravel.message}</p>`
+          }
+        </div>
+      </div>
+
+      ${summary.optimization.waste.length > 0 ? `
+        <div class="optimization-section">
+          <h4>♻️ Material Waste Reduction</h4>
+          ${summary.optimization.waste.map(waste =>
+            `<div class="waste-item">
+              <strong>${waste.material}:</strong>
+              <p>${waste.message}</p>
+            </div>`
+          ).join('')}
+        </div>
+      ` : ''}
+
+      ${summary.optimization.cost.length > 0 ? `
+        <div class="optimization-section">
+          <h4>💰 Cost Optimization</h4>
+          <ul>
+            ${summary.optimization.cost.map(suggestion => `<li>${suggestion}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+
+      ${summary.optimization.seasonal.length > 0 ? `
+        <div class="seasonal-section">
+          <h4>🌤️ Seasonal Considerations</h4>
+          <ul>
+            ${summary.optimization.seasonal.map(consideration => `<li>${consideration}</li>`).join('')}
+          </ul>
+        </div>
+      ` : ''}
+
+      <div class="recommendations-section">
+        <h4>📝 Project Recommendations</h4>
+        <ul>
+          ${summary.optimization.complexity.map(rec => `<li>${rec}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <style>
+      .summary-dialog {
+        overflow-y: auto;
+        padding: 10px;
+      }
+
+      .overview-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 5px;
+      }
+
+      .analysis-section,
+      .optimization-section,
+      .seasonal-section,
+      .recommendations-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-left: 4px solid #007bff;
+        background: #f8f9fa;
+      }
+
+      .analysis-item,
+      .waste-item {
+        margin-bottom: 15px;
+        padding: 10px;
+        background: white;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+      }
+
+      .good {
+        color: #28a745;
+        font-weight: 500;
+      }
+
+      .warning {
+        color: #ffc107;
+        font-weight: 500;
+      }
+
+      .concern {
+        color: #dc3545;
+        font-weight: 500;
+      }
+
+      h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #495057;
+      }
+
+      ul {
+        margin-bottom: 0;
+      }
+
+      li {
+        margin-bottom: 5px;
+      }
+    </style>
+  `
+
+  alertify.alert('Foundation Summary', htmlContent, function() {
+    setTimeout(() => {
+      isDialogOpen.value = false
+    }, 100)
+  }).set({
+    resizable: true,
+    maximizable: true,
+    modal: true
+  })
+}
 
 const showSeasonalTips = () => {
   const currentMonth = new Date().getMonth()
@@ -753,32 +938,6 @@ watch(
       messageThrottler.showMessageOnce(
         'cost_over_500',
         '💡 Tip: Buy materials in bulk for better prices on larger projects',
-        'message'
-      )
-    }
-  }
-)
-
-// Foundation thickness recommendations watcher
-watch(
-  () => calculations.foundationThickness.value,
-  (newThickness) => {
-    if (store.isExperienced) return
-
-    const recommendations = {
-      4: "4\" is suitable for lightweight structures like patios or walkways",
-      5: "5\" works for garden sheds and light storage buildings",
-      6: "6\" is good for garages and workshops with normal vehicle traffic",
-      8: "8\" is recommended for heavy equipment or commercial use",
-      10: "10\" is for heavy-duty applications or areas with freeze-thaw cycles",
-      12: "12\" provides maximum strength for extreme loads or poor soil conditions"
-    }
-
-    const message = recommendations[newThickness]
-    if (message) {
-      messageThrottler.showMessage(
-        `thickness_${newThickness}`,
-        message,
         'message'
       )
     }

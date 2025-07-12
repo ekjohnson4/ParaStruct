@@ -9,12 +9,12 @@ import 'bootstrap'
 import 'alertifyjs/build/css/alertify.min.css'
 import 'alertifyjs/build/css/themes/default.min.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faBars, faTimes, faCog, faCartShopping, faInfo, faPlusCircle, faMinusCircle } from '@fortawesome/free-solid-svg-icons'
+import { faBars, faTimes, faCog, faCartShopping, faInfo, faPlusCircle, faMinusCircle, faClipboardList, faRotateRight } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
-library.add(faBars, faTimes, faCog, faCartShopping, faInfo, faPlusCircle, faMinusCircle)
+library.add(faBars, faTimes, faCog, faCartShopping, faInfo, faPlusCircle, faMinusCircle, faClipboardList, faRotateRight)
 
 const app = createApp(App)
 const pinia = createPinia()

@@ -163,12 +163,11 @@
 }
 
 .materials-container {
-  margin-top: auto;
-  padding-bottom: 20px;
-  margin-top: 55px;
-  margin-left: 240px;
+  padding-bottom: 68px;
+  padding-top: 55px;
+  padding-left: 240px;
   color: black;
-  height: calc(100% - 55px);
+  height: 100%;
 }
 
 .materials-wrapper {
@@ -318,6 +317,23 @@
   font-size: 11px
 }
 
+.materials-btns{
+  display: flex;
+}
+
+.summary-btn {
+  margin-top: 10px;
+  margin-left: 12px;
+  margin-right: 12px;
+  width: 80%;
+}
+
+.refresh-btn {
+  margin-top: 10px;
+  width: 20%;
+  margin-right: 12px;
+}
+
 #main {
   transition: margin-left .5s;
 }
@@ -428,6 +444,7 @@
 }
 
 .alertify .ajs-dialog {
+  min-height: 70vh !important;
   top: 50% !important;
   left: 50% !important;
   transform: translate(-50%, -50%) !important;
